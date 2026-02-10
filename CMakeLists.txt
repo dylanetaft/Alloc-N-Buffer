@@ -8,7 +8,7 @@ include(GNUInstallDirs)
 
 file(GLOB_RECURSE SOURCE_FILES ${PROJECT_SOURCE_DIR}/src/*.c)
 
-option(BUILD_TESTS "Build tests" ON)
+option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_FUZZ "Build fuzz targets" OFF)
 option(BUILD_STATIC "Build static library" ON)
 option(BUILD_SHARED "Build shared library" OFF)
