@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['n_20buffer_0',['Alloc-N-Buffer',['../md_Alloc-N-Buffer.html',1,'']]]
+  ['key_20behaviors_0',['Key behaviors',['../md_Alloc-N-Buffer.html#autotoc_md5',1,'']]]
 ];

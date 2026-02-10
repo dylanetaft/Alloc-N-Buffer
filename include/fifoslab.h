@@ -1,4 +1,8 @@
 #pragma once
+/**
+ * @file fifoslab.h
+ * @brief ANB_FifoSlab public API — FIFO slab allocator with item tracking.
+ */
 #include <stdint.h>
 #include <stdlib.h>
 

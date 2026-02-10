@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['what_20it_20does_0',['What it does',['../md_Alloc-N-Buffer.html#autotoc_md1',1,'']]]
+  ['size_20recovery_0',['Alignment and size recovery',['../md_Alloc-N-Buffer.html#autotoc_md4',1,'']]],
+  ['start_1',['Quick start',['../md_Alloc-N-Buffer.html#autotoc_md2',1,'']]]
 ];
