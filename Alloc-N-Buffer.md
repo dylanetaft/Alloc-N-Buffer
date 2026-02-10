@@ -4,12 +4,13 @@ A C library providing `ANB_FifoSlab` -- a FIFO slab allocator that doubles as a 
 
 ## What it does
 
-`ANB_FifoSlab` is a growable, contiguous byte buffer with two consumption modes:
-
-- **Byte-level**: push arbitrary data, peek/pop raw byte ranges (like a traditional ring buffer, but linear with auto-reset).
-- **Item-level**: each `push` is tracked as a discrete item. You can peek by index (`peek_item(q, n, &size)`) or pop items one at a time (`pop_item`).
+`ANB_FifoSlab` is a growable, contiguous byte buffer with internal tracking of each push as indexed offsets to the item data. 
+It supports pushing arbitrary byte arrays, and peeking/popping them back in FIFO order. The internal buffer grows as needed, 
+and when all data is consumed, it resets to offset 0 for reuse.
 
 All data is stored with `max_align_t` alignment padding, so structs can be pushed and read back without alignment concerns.
+You can also store structs as headers next to variable-length binary data within a single item.
+
 
 ## Quick start
 
@@ -28,12 +29,6 @@ size_t item_size;
 uint8_t *data = ANB_fifoslab_peek_item(q, 0, &item_size);  // "hello"
 ANB_fifoslab_pop_item(q);  // removes "hello", returns aligned size
 
-// Byte-level access (on remaining data)
-size_t avail = ANB_fifoslab_peek_size(q);
-uint8_t *raw = ANB_fifoslab_peek(q, avail);
-ANB_fifoslab_pop(q, avail);
-
-ANB_fifoslab_destroy(q);
 ```
 
 ## Building
@@ -70,25 +65,24 @@ If you need to recover exact sizes, pack your data into a fixed-size struct (or 
 ```c
 // Original size is lost -- out_size will be 16, not 7
 uint8_t blob[7] = { ... };
-ANB_fifoslab_push(q, blob, 7);
+ANB_fifoslab_push_item(q, blob, 7);
 
 // Original size is recoverable -- sizeof(MyPacket) is known at compile time
 typedef struct { uint32_t id; float value; } MyPacket;
 MyPacket pkt = {1, 3.14f};
-ANB_fifoslab_push(q, (const uint8_t *)&pkt, sizeof(MyPacket));
+ANB_fifoslab_push_item(q, (const uint8_t *)&pkt, sizeof(MyPacket));
 
 // For variable-length data, encode the length in a header struct
 typedef struct { uint32_t len; } Header;
 Header hdr = { .len = 7 };
-// push header, then push payload -- peek_item each by index
+// push header, then push payload, or push together as one item with offset by sizeof(Header)
 ```
 
-The padding bytes are always zeroed, so reading `sizeof(YourStruct)` from a peeked pointer is safe even if the struct size isn't a multiple of `max_align_t`.
+The padding bytes are always zeroed, so reading `sizeof(YourStruct)` number of bytes from a peeked pointer is safe.
 
 ## Key behaviors
 
 - Buffer and item index grow automatically (doubling strategy).
 - When all data is consumed, internal positions reset to offset 0, reusing the buffer without reallocation.
-- Byte-level `pop` and item-level `pop_item` both advance the same internal state. Mixing them works but requires understanding alignment (see header docs).
-- All sizes returned by `peek_item`, `pop_item`, `peek_size`, and `pop` are **aligned** sizes, not the original `data_len`.
+- All sizes returned by `peek_item`, `pop_item`, `peek_size` are **aligned** sizes, not the original `data_len`.
 - Allocation failures abort via `assert()`.
