@@ -1,0 +1,10 @@
+PROJECT_NAME           = "Alloc-N-Buffer"
+INPUT                  = src include Alloc-N-Buffer.md
+RECURSIVE              = YES
+GENERATE_HTML          = YES
+GENERATE_LATEX         = NO
+USE_MDFILE_AS_MAIN_PAGE = Alloc-N-Buffer.md
+OUTPUT_DIRECTORY = docs
+HTML_OUTPUT = .
+OPTIMIZE_OUTPUT_FOR_C = YES
+
