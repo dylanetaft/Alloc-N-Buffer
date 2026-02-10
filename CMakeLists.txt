@@ -37,7 +37,7 @@ install(TARGETS ${PROJECT_NAME}_static ${PROJECT_NAME}_shared
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include/allocnbuffer)
 
 
 if(BUILD_TESTS)
