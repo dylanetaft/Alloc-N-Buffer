@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(alloc-n-buffer C)
+project(allocnbuffer C)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -52,7 +52,7 @@ if(BUILD_TESTS)
     FetchContent_MakeAvailable(unity)
 
     add_executable(anb_tests tests/test_fifoslab.c)
-    target_link_libraries(anb_tests unity alloc-n-buffer_static)
+    target_link_libraries(anb_tests unity allocnbuffer_static)
 
     add_test(NAME anb_test COMMAND anb_tests)
 endif()
@@ -62,7 +62,7 @@ option(BUILD_FUZZ "Build fuzz targets (requires clang with libFuzzer)" OFF)
 
 if(BUILD_FUZZ)
     add_executable(fuzz_fifoslab fuzz/fuzz_fifoslab.c)
-    target_link_libraries(fuzz_fifoslab alloc-n-buffer_static)
+    target_link_libraries(fuzz_fifoslab allocnbuffer_static)
     target_compile_options(fuzz_fifoslab PRIVATE -fsanitize=fuzzer,address,undefined -g -O1)
     target_link_options(fuzz_fifoslab PRIVATE -fsanitize=fuzzer,address,undefined)
 endif()

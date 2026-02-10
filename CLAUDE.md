@@ -22,7 +22,7 @@ cmake -B build -DBUILD_FUZZ=ON && cmake --build build --target fuzz_fifoslab
 - **Tests**: `tests/test_fifoslab.c` -- Unity framework tests
 - **Fuzzer**: `fuzz/fuzz_fifoslab.c` -- libFuzzer harness
 
-CMake produces both static (`alloc-n-buffer_static`) and shared (`alloc-n-buffer_shared`) libraries from a single object library.
+CMake produces both static (`allocnbuffer_static`) and shared (`allocnbuffer_shared`) libraries from a single object library.
 
 ## Critical alignment behavior
 
@@ -69,7 +69,7 @@ Data is stored in a contiguous buffer with a contiguous `size_t[]` index, so cac
 
 ```cmake
 add_subdirectory(path/to/Alloc-N-Buffer)
-target_link_libraries(your_target alloc-n-buffer_static)
+target_link_libraries(your_target allocnbuffer_static)
 ```
 
 The `include/` directory is exported via `BUILD_INTERFACE`, so `#include "fifoslab.h"` works automatically.
