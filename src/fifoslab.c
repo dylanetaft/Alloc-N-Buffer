@@ -15,10 +15,11 @@ struct ANB_FifoSlab {
   size_t read_pos;  // Current read position
   size_t size; // Total size of the buffer
 
-  size_t *index;       // Parallel buffer: size of each pushed item
+  size_t *index;       // Parallel buffer: aligned size of each pushed item
+  uint8_t *pad_index;  // Parallel buffer: padding bytes added per item
   size_t index_write;  // Number of entries written
   size_t index_read;   // Number of entries consumed
-  size_t index_cap;    // Capacity (number of size_t slots)
+  size_t index_cap;    // Capacity (number of slots)
 };
 
 
@@ -36,6 +37,8 @@ ANB_FifoSlab_t* ANB_fifoslab_create(size_t initial_size) {
 
     queue->index = (size_t *)malloc(ANB_FS_INITIAL_INDEX_CAP * sizeof(size_t));
     assert(queue->index != NULL);
+    queue->pad_index = (uint8_t *)malloc(ANB_FS_INITIAL_INDEX_CAP * sizeof(uint8_t));
+    assert(queue->pad_index != NULL);
     queue->index_write = 0;
     queue->index_read = 0;
     queue->index_cap = ANB_FS_INITIAL_INDEX_CAP;
@@ -47,6 +50,7 @@ void ANB_fifoslab_destroy(ANB_FifoSlab_t* queue) {
     if (queue) {
         free(queue->data);
         free(queue->index);
+        free(queue->pad_index);
         free(queue);
     }
 }
@@ -75,15 +79,18 @@ void ANB_fifoslab_push_item(ANB_FifoSlab_t* queue, const uint8_t* data, size_t d
         memset(queue->data + queue->write_pos + data_len, 0, aligned_len - data_len);
     queue->write_pos += aligned_len;
 
-    // Expand index buffer if needed
+    // Expand index buffers if needed
     if (queue->index_write >= queue->index_cap) {
         size_t new_cap = queue->index_cap * 2;
         queue->index = (size_t *)realloc(queue->index, new_cap * sizeof(size_t));
         assert(queue->index != NULL);
+        queue->pad_index = (uint8_t *)realloc(queue->pad_index, new_cap * sizeof(uint8_t));
+        assert(queue->pad_index != NULL);
         queue->index_cap = new_cap;
     }
 
-    // Record this entry's aligned size
+    // Record this entry's aligned size and padding offset
+    queue->pad_index[queue->index_write] = (uint8_t)(aligned_len - data_len);
     queue->index[queue->index_write++] = aligned_len;
 }
 
@@ -110,7 +117,8 @@ uint8_t *ANB_fifoslab_peek_item(ANB_FifoSlab_t* queue, size_t n, size_t *out_siz
         offset += queue->index[i];
     }
 
-    size_t item_size = queue->index[queue->index_read + n];
+    size_t abs_idx = queue->index_read + n;
+    size_t item_size = queue->index[abs_idx] - queue->pad_index[abs_idx];
     if (out_size) {
         *out_size = item_size;
     }
@@ -126,15 +134,15 @@ uint8_t *ANB_fifoslab_peek_item_iter(ANB_FifoSlab_t* queue, ANB_FifoSlabIter_t *
         return NULL;
     }
 
-    size_t item_size = queue->index[abs_idx];
+    size_t aligned_size = queue->index[abs_idx];
     if (out_size) {
-        *out_size = item_size;
+        *out_size = aligned_size - queue->pad_index[abs_idx];
     }
 
     uint8_t *ptr = queue->data + queue->read_pos + iter->_byte_offset;
 
     iter->_item_idx++;
-    iter->_byte_offset += item_size;
+    iter->_byte_offset += aligned_size;
 
     return ptr;
 }
@@ -145,8 +153,10 @@ size_t ANB_fifoslab_pop_item(ANB_FifoSlab_t* queue) {
         return 0;
     }
 
-    size_t item_size = queue->index[queue->index_read++];
-    queue->read_pos += item_size;
+    size_t idx = queue->index_read++;
+    size_t aligned_size = queue->index[idx];
+    size_t item_size = aligned_size - queue->pad_index[idx];
+    queue->read_pos += aligned_size;
 
     // If all data consumed, reset everything
     if (queue->read_pos == queue->write_pos) {

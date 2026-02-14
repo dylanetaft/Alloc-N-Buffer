@@ -26,15 +26,15 @@ CMake produces both static (`allocnbuffer_static`) and shared (`allocnbuffer_sha
 
 ## Critical alignment behavior
 
-All pushed data is padded to `max_align_t` alignment (typically 16 bytes on 64-bit). This affects everything:
+All pushed data is padded to `max_align_t` alignment (typically 16 bytes on 64-bit). Data pointers returned by peek are always aligned. However, the original `data_len` is preserved:
 
-- `peek_item(q, n, &size)` writes the **aligned** size to `*size`
-- `pop_item()` returns the **aligned** size
-- `size()` returns the total bytes in use (sum of aligned item sizes)
+- `peek_item(q, n, &size)` writes the **original** `data_len` to `*size`
+- `pop_item()` returns the **original** `data_len`
+- `size()` returns the total bytes in use (sum of **aligned** item sizes, since that reflects actual buffer consumption)
 
-Use `ALIGN_UP(x) = ((x + _Alignof(max_align_t) - 1) & ~(_Alignof(max_align_t) - 1))` to compute aligned sizes from original data lengths.
+Use `ALIGN_UP(x) = ((x + _Alignof(max_align_t) - 1) & ~(_Alignof(max_align_t) - 1))` to compute aligned sizes from original data lengths if needed.
 
-**The original `data_len` is not stored and cannot be recovered from the buffer.** To recover exact sizes, push fixed-size structs (where `sizeof` is known) or encode a length field in a header struct before the variable-length payload.
+Internally, a parallel `uint8_t *pad_index` tracks the padding offset added to each item. This shares `index_read`/`index_write`/`index_cap` with the main `size_t *index`.
 
 ## API at a glance
 
@@ -45,9 +45,9 @@ Use `ALIGN_UP(x) = ((x + _Alignof(max_align_t) - 1) & ~(_Alignof(max_align_t) - 
 | `ANB_fifoslab_push_item(q, data, len)` | Append data as a discrete item (auto-grows, pads to alignment) |
 | `ANB_fifoslab_size(q)` | Total bytes in use (sum of aligned item sizes) |
 | `ANB_fifoslab_item_count(q)` | Number of discrete items |
-| `ANB_fifoslab_peek_item(q, n, &sz)` | Pointer to item n, or NULL (O(n) offset walk) |
-| `ANB_fifoslab_peek_item_iter(q, &iter, &sz)` | O(1) per-step item iterator, returns NULL when done |
-| `ANB_fifoslab_pop_item(q)` | Remove first item, returns aligned size or 0 |
+| `ANB_fifoslab_peek_item(q, n, &sz)` | Pointer to item n, or NULL (O(n) offset walk); `sz` receives original data_len |
+| `ANB_fifoslab_peek_item_iter(q, &iter, &sz)` | O(1) per-step item iterator, returns NULL when done; `sz` receives original data_len |
+| `ANB_fifoslab_pop_item(q)` | Remove first item, returns original data_len or 0 |
 
 ## Performance notes
 

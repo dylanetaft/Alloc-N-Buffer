@@ -16,8 +16,8 @@
  * @brief Opaque FIFO slab allocator / buffer queue with item tracking.
  *
  * All pushed data is padded to max_align_t alignment. Sizes reported by
- * peek_item and pop_item reflect the aligned size, not the original
- * data_len passed to push_item.
+ * peek_item and pop_item reflect the original data_len passed to
+ * push_item, not the aligned size.
  */
 typedef struct ANB_FifoSlab ANB_FifoSlab_t;
 
@@ -69,8 +69,8 @@ size_t ANB_fifoslab_item_count(ANB_FifoSlab_t* queue);
  * @brief Peek at a specific item by index without consuming.
  * @param queue The queue. Must not be NULL.
  * @param n Zero-based index (0 = first unconsumed item).
- * @param out_size If non-NULL, receives the item's aligned size in bytes
- *                 (i.e. ALIGN_UP(data_len), not the original data_len).
+ * @param out_size If non-NULL, receives the item's original size in bytes
+ *                 (i.e. the data_len passed to push_item).
  * @return Pointer to the item's data, or NULL if n is out of range.
  * @note The returned pointer is valid until the next push or pop.
  */
@@ -95,7 +95,7 @@ typedef struct ANB_FifoSlabIter {
  * @brief Iterate items in FIFO order, O(1) per call.
  * @param queue The queue. Must not be NULL.
  * @param iter  Iterator state. Zero-initialize before first call.
- * @param out_size If non-NULL, receives the item's aligned size in bytes.
+ * @param out_size If non-NULL, receives the item's original size in bytes.
  * @return Pointer to the current item's data, or NULL if no more items.
  * @note Advances iter to the next item on each call. Do not push or pop
  *       while iterating.  Restart iteration if you need to do this
@@ -106,7 +106,7 @@ uint8_t *ANB_fifoslab_peek_item_iter(ANB_FifoSlab_t* queue, ANB_FifoSlabIter_t *
  * @ingroup ANB_FifoSlab
  * @brief Pop the first item from the queue.
  * @param queue The queue. Must not be NULL.
- * @return Aligned size of the popped item in bytes, or 0 if empty.
+ * @return Original size of the popped item in bytes, or 0 if empty.
  * @note When all items are consumed, internal positions reset to reuse buffer space.
  */
 size_t ANB_fifoslab_pop_item(ANB_FifoSlab_t* queue);

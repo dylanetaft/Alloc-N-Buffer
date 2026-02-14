@@ -27,7 +27,7 @@ ANB_fifoslab_push(q, (const uint8_t *)"world", 6);
 size_t count = ANB_fifoslab_item_count(q);  // 2
 size_t item_size;
 uint8_t *data = ANB_fifoslab_peek_item(q, 0, &item_size);  // "hello"
-ANB_fifoslab_pop_item(q);  // removes "hello", returns aligned size
+ANB_fifoslab_pop_item(q);  // removes "hello", returns original size (6)
 
 ```
 
@@ -52,37 +52,29 @@ cmake --build build --target fuzz_fifoslab
 ./build/fuzz_fifoslab -max_total_time=60
 ```
 
-## Alignment and size recovery
+## Alignment and size tracking
 
-Every push pads the data up to the next `max_align_t` boundary (typically 16 bytes on 64-bit systems). This means the buffer may store **more bytes than you pushed**, and the sizes returned by the API (`peek_item`, `pop_item`, `peek_size`, `pop`) are always the padded (aligned) size -- not the original length.
+Every push pads the data up to the next `max_align_t` boundary (typically 16 bytes on 64-bit systems). This means the buffer may store **more bytes than you pushed** internally. However, the original `data_len` is preserved and returned by the API:
 
-This has a practical consequence: **you cannot recover the original size of arbitrary byte arrays from the buffer alone.**
+- `peek_item` writes the original `data_len` to `*out_size`
+- `pop_item` returns the original `data_len`
+- `size()` returns total **aligned** bytes in use (reflecting actual buffer consumption)
 
-For example, pushing a 7-byte `uint8_t[]` consumes 16 bytes in the buffer. When you `peek_item` it back, `out_size` will be 16, not 7. The original length is lost.
-
-If you need to recover exact sizes, pack your data into a fixed-size struct (or a struct with a length field):
+For example, pushing a 7-byte `uint8_t[]` consumes 16 bytes in the buffer, but `peek_item` will report `out_size = 7`.
 
 ```c
-// Original size is lost -- out_size will be 16, not 7
 uint8_t blob[7] = { ... };
 ANB_fifoslab_push_item(q, blob, 7);
 
-// Original size is recoverable -- sizeof(MyPacket) is known at compile time
-typedef struct { uint32_t id; float value; } MyPacket;
-MyPacket pkt = {1, 3.14f};
-ANB_fifoslab_push_item(q, (const uint8_t *)&pkt, sizeof(MyPacket));
-
-// For variable-length data, encode the length in a header struct
-typedef struct { uint32_t len; } Header;
-Header hdr = { .len = 7 };
-// push header, then push payload, or push together as one item with offset by sizeof(Header)
+size_t sz;
+uint8_t *data = ANB_fifoslab_peek_item(q, 0, &sz);  // sz == 7, data is 16-byte aligned
 ```
 
-The padding bytes are always zeroed, so reading `sizeof(YourStruct)` number of bytes from a peeked pointer is safe.
+As bytes are aligned, you may directly cast the returned pointer to a struct type if you know the layout, or use it as a header for variable-length data.
 
 ## Key behaviors
 
 - Buffer and item index grow automatically (doubling strategy).
 - When all data is consumed, internal positions reset to offset 0, reusing the buffer without reallocation.
-- All sizes returned by `peek_item`, `pop_item`, `peek_size` are **aligned** sizes, not the original `data_len`.
+- All sizes returned by `peek_item`, `pop_item` are the **original** `data_len`. Use `ANB_fifoslab_size()` for total aligned buffer consumption.
 - Allocation failures abort via `assert()`.

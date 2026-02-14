@@ -31,14 +31,14 @@ void test_push_peek_item_pop_item_strings(void) {
         size_t item_size = 0;
         uint8_t *data = ANB_fifoslab_peek_item(q, i, &item_size);
         TEST_ASSERT_NOT_NULL(data);
-        TEST_ASSERT_GREATER_OR_EQUAL(strlen(strings[i]) + 1, item_size);
+        TEST_ASSERT_EQUAL_size_t(strlen(strings[i]) + 1, item_size);
         TEST_ASSERT_EQUAL_INT(0, memcmp(data, strings[i], strlen(strings[i]) + 1));
     }
 
     /* pop_item one by one, verify item_count decrements */
     for (size_t i = 0; i < count; i++) {
         size_t sz = ANB_fifoslab_pop_item(q);
-        TEST_ASSERT_EQUAL_size_t(ALIGN_UP(strlen(strings[i]) + 1), sz);
+        TEST_ASSERT_EQUAL_size_t(strlen(strings[i]) + 1, sz);
         TEST_ASSERT_EQUAL_size_t(count - i - 1, ANB_fifoslab_item_count(q));
     }
 
@@ -100,7 +100,7 @@ void test_aligned_struct_with_trailing_string(void) {
     /* pop_item each, verify returned sizes */
     for (size_t i = 0; i < count; i++) {
         size_t label_len = strlen(labels[i]) + 1;
-        size_t expected = ALIGN_UP(sizeof(TestRecord) + label_len);
+        size_t expected = sizeof(TestRecord) + label_len;
         size_t sz = ANB_fifoslab_pop_item(q);
         TEST_ASSERT_EQUAL_size_t(expected, sz);
         TEST_ASSERT_EQUAL_size_t(count - i - 1, ANB_fifoslab_item_count(q));
@@ -132,7 +132,7 @@ void test_peek_item_iter(void) {
 
     while ((data = ANB_fifoslab_peek_item_iter(q, &iter, &item_size)) != NULL) {
         TEST_ASSERT_LESS_THAN(count, i);
-        TEST_ASSERT_EQUAL_size_t(ALIGN_UP(strlen(strings[i]) + 1), item_size);
+        TEST_ASSERT_EQUAL_size_t(strlen(strings[i]) + 1, item_size);
         TEST_ASSERT_EQUAL_STRING(strings[i], (const char *)data);
         i++;
     }
