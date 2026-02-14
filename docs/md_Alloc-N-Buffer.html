@@ -111,13 +111,13 @@ Quick start</h1>
 <div class="line"><span class="keywordtype">size_t</span> count = <a class="code hl_function" href="group__ANB__FifoSlab.html#ga6e45c9a19e16100560dbb119101e0c95">ANB_fifoslab_item_count</a>(q);  <span class="comment">// 2</span></div>
 <div class="line"><span class="keywordtype">size_t</span> item_size;</div>
 <div class="line">uint8_t *data = <a class="code hl_function" href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a>(q, 0, &amp;item_size);  <span class="comment">// &quot;hello&quot;</span></div>
-<div class="line"><a class="code hl_function" href="group__ANB__FifoSlab.html#ga8fbdac843949ee17f28178df3a197de9">ANB_fifoslab_pop_item</a>(q);  <span class="comment">// removes &quot;hello&quot;, returns aligned size</span></div>
+<div class="line"><a class="code hl_function" href="group__ANB__FifoSlab.html#ga8fbdac843949ee17f28178df3a197de9">ANB_fifoslab_pop_item</a>(q);  <span class="comment">// removes &quot;hello&quot;, returns original size (6)</span></div>
 <div class="ttc" id="afifoslab_8h_html"><div class="ttname"><a href="fifoslab_8h.html">fifoslab.h</a></div><div class="ttdoc">ANB_FifoSlab public API — FIFO slab allocator with item tracking.</div></div>
 <div class="ttc" id="agroup__ANB__FifoSlab_html_ga46c805103d80a911a68afbafd9a9898a"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga46c805103d80a911a68afbafd9a9898a">ANB_FifoSlab_t</a></div><div class="ttdeci">struct ANB_FifoSlab ANB_FifoSlab_t</div><div class="ttdoc">Opaque FIFO slab allocator / buffer queue with item tracking.</div><div class="ttdef"><b>Definition</b> fifoslab.h:22</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga6e45c9a19e16100560dbb119101e0c95"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga6e45c9a19e16100560dbb119101e0c95">ANB_fifoslab_item_count</a></div><div class="ttdeci">size_t ANB_fifoslab_item_count(ANB_FifoSlab_t *queue)</div><div class="ttdoc">Get the number of discrete items in the queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:95</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga85588d50f388a26090f4009a9bc5cff3"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga85588d50f388a26090f4009a9bc5cff3">ANB_fifoslab_create</a></div><div class="ttdeci">ANB_FifoSlab_t * ANB_fifoslab_create(size_t initial_size)</div><div class="ttdoc">Create a new buffer queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:25</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga8fbdac843949ee17f28178df3a197de9"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga8fbdac843949ee17f28178df3a197de9">ANB_fifoslab_pop_item</a></div><div class="ttdeci">size_t ANB_fifoslab_pop_item(ANB_FifoSlab_t *queue)</div><div class="ttdoc">Pop the first item from the queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:142</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_gac24a0e13b4d59b7ea5e4fa2408a47946"><div class="ttname"><a href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a></div><div class="ttdeci">uint8_t * ANB_fifoslab_peek_item(ANB_FifoSlab_t *queue, size_t n, size_t *out_size)</div><div class="ttdoc">Peek at a specific item by index without consuming.</div><div class="ttdef"><b>Definition</b> fifoslab.c:100</div></div>
+<div class="ttc" id="agroup__ANB__FifoSlab_html_ga6e45c9a19e16100560dbb119101e0c95"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga6e45c9a19e16100560dbb119101e0c95">ANB_fifoslab_item_count</a></div><div class="ttdeci">size_t ANB_fifoslab_item_count(ANB_FifoSlab_t *queue)</div><div class="ttdoc">Get the number of discrete items in the queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:102</div></div>
+<div class="ttc" id="agroup__ANB__FifoSlab_html_ga85588d50f388a26090f4009a9bc5cff3"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga85588d50f388a26090f4009a9bc5cff3">ANB_fifoslab_create</a></div><div class="ttdeci">ANB_FifoSlab_t * ANB_fifoslab_create(size_t initial_size)</div><div class="ttdoc">Create a new buffer queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:26</div></div>
+<div class="ttc" id="agroup__ANB__FifoSlab_html_ga8fbdac843949ee17f28178df3a197de9"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga8fbdac843949ee17f28178df3a197de9">ANB_fifoslab_pop_item</a></div><div class="ttdeci">size_t ANB_fifoslab_pop_item(ANB_FifoSlab_t *queue)</div><div class="ttdoc">Pop the first item from the queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:150</div></div>
+<div class="ttc" id="agroup__ANB__FifoSlab_html_gac24a0e13b4d59b7ea5e4fa2408a47946"><div class="ttname"><a href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a></div><div class="ttdeci">uint8_t * ANB_fifoslab_peek_item(ANB_FifoSlab_t *queue, size_t n, size_t *out_size)</div><div class="ttdoc">Peek at a specific item by index without consuming.</div><div class="ttdef"><b>Definition</b> fifoslab.c:107</div></div>
 </div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
 Building</h1>
 <div class="fragment"><div class="line">cmake -B build</div>
@@ -129,32 +129,27 @@ Building</h1>
 <div class="line">cmake --build build --target fuzz_fifoslab</div>
 <div class="line">./build/fuzz_fifoslab -max_total_time=60</div>
 </div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md4"></a>
-Alignment and size recovery</h1>
-<p>Every push pads the data up to the next <span class="tt">max_align_t</span> boundary (typically 16 bytes on 64-bit systems). This means the buffer may store <b>more bytes than you pushed</b>, and the sizes returned by the API (<span class="tt">peek_item</span>, <span class="tt">pop_item</span>, <span class="tt">peek_size</span>, <span class="tt">pop</span>) are always the padded (aligned) size &ndash; not the original length.</p>
-<p>This has a practical consequence: <b>you cannot recover the original size of arbitrary byte arrays from the buffer alone.</b></p>
-<p>For example, pushing a 7-byte <span class="tt">uint8_t[]</span> consumes 16 bytes in the buffer. When you <span class="tt">peek_item</span> it back, <span class="tt">out_size</span> will be 16, not 7. The original length is lost.</p>
-<p>If you need to recover exact sizes, pack your data into a fixed-size struct (or a struct with a length field):</p>
-<div class="fragment"><div class="line"><span class="comment">// Original size is lost -- out_size will be 16, not 7</span></div>
-<div class="line">uint8_t blob[7] = { ... };</div>
+Alignment and size tracking</h1>
+<p>Every push pads the data up to the next <span class="tt">max_align_t</span> boundary (typically 16 bytes on 64-bit systems). This means the buffer may store <b>more bytes than you pushed</b> internally. However, the original <span class="tt">data_len</span> is preserved and returned by the API:</p>
+<ul>
+<li><span class="tt">peek_item</span> writes the original <span class="tt">data_len</span> to <span class="tt">*out_size</span></li>
+<li><span class="tt">pop_item</span> returns the original <span class="tt">data_len</span></li>
+<li><span class="tt">size()</span> returns total <b>aligned</b> bytes in use (reflecting actual buffer consumption)</li>
+</ul>
+<p>For example, pushing a 7-byte <span class="tt">uint8_t[]</span> consumes 16 bytes in the buffer, but <span class="tt">peek_item</span> will report <span class="tt">out_size = 7</span>.</p>
+<div class="fragment"><div class="line">uint8_t blob[7] = { ... };</div>
 <div class="line"><a class="code hl_function" href="group__ANB__FifoSlab.html#ga4875699f398f535e9325e81fe230fee8">ANB_fifoslab_push_item</a>(q, blob, 7);</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// Original size is recoverable -- sizeof(MyPacket) is known at compile time</span></div>
-<div class="line"><span class="keyword">typedef</span> <span class="keyword">struct </span>{ uint32_t id; <span class="keywordtype">float</span> value; } MyPacket;</div>
-<div class="line">MyPacket pkt = {1, 3.14f};</div>
-<div class="line"><a class="code hl_function" href="group__ANB__FifoSlab.html#ga4875699f398f535e9325e81fe230fee8">ANB_fifoslab_push_item</a>(q, (<span class="keyword">const</span> uint8_t *)&amp;pkt, <span class="keyword">sizeof</span>(MyPacket));</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// For variable-length data, encode the length in a header struct</span></div>
-<div class="line"><span class="keyword">typedef</span> <span class="keyword">struct </span>{ uint32_t len; } Header;</div>
-<div class="line">Header hdr = { .len = 7 };</div>
-<div class="line"><span class="comment">// push header, then push payload, or push together as one item with offset by sizeof(Header)</span></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga4875699f398f535e9325e81fe230fee8"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga4875699f398f535e9325e81fe230fee8">ANB_fifoslab_push_item</a></div><div class="ttdeci">void ANB_fifoslab_push_item(ANB_FifoSlab_t *queue, const uint8_t *data, size_t data_len)</div><div class="ttdoc">Push data onto the end of the queue as a discrete item.</div><div class="ttdef"><b>Definition</b> fifoslab.c:54</div></div>
-</div><!-- fragment --><p>The padding bytes are always zeroed, so reading <span class="tt">sizeof(YourStruct)</span> number of bytes from a peeked pointer is safe.</p>
+<div class="line"><span class="keywordtype">size_t</span> sz;</div>
+<div class="line">uint8_t *data = <a class="code hl_function" href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a>(q, 0, &amp;sz);  <span class="comment">// sz == 7, data is 16-byte aligned</span></div>
+<div class="ttc" id="agroup__ANB__FifoSlab_html_ga4875699f398f535e9325e81fe230fee8"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga4875699f398f535e9325e81fe230fee8">ANB_fifoslab_push_item</a></div><div class="ttdeci">void ANB_fifoslab_push_item(ANB_FifoSlab_t *queue, const uint8_t *data, size_t data_len)</div><div class="ttdoc">Push data onto the end of the queue as a discrete item.</div><div class="ttdef"><b>Definition</b> fifoslab.c:58</div></div>
+</div><!-- fragment --><p>As bytes are aligned, you may directly cast the returned pointer to a struct type if you know the layout, or use it as a header for variable-length data.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md5"></a>
 Key behaviors</h1>
 <ul>
 <li>Buffer and item index grow automatically (doubling strategy).</li>
 <li>When all data is consumed, internal positions reset to offset 0, reusing the buffer without reallocation.</li>
-<li>All sizes returned by <span class="tt">peek_item</span>, <span class="tt">pop_item</span>, <span class="tt">peek_size</span> are <b>aligned</b> sizes, not the original <span class="tt">data_len</span>.</li>
+<li>All sizes returned by <span class="tt">peek_item</span>, <span class="tt">pop_item</span> are the <b>original</b> <span class="tt">data_len</span>. Use <span class="tt"><a class="el" href="group__ANB__FifoSlab.html#gacff07453b8629c5f5c6f72daad54df63" title="Get the total number of bytes currently in use (including alignment padding).">ANB_fifoslab_size()</a></span> for total aligned buffer consumption.</li>
 <li>Allocation failures abort via <span class="tt">assert()</span>. </li>
 </ul>
 </div></div><!-- contents -->

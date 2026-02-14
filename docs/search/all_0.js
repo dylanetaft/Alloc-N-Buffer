@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['alignment_20and_20size_20recovery_0',['Alignment and size recovery',['../md_Alloc-N-Buffer.html#autotoc_md4',1,'']]],
+  ['alignment_20and_20size_20tracking_0',['Alignment and size tracking',['../md_Alloc-N-Buffer.html#autotoc_md4',1,'']]],
   ['alloc_20n_20buffer_1',['Alloc-N-Buffer',['../md_Alloc-N-Buffer.html',1,'']]],
   ['anb_5ffifoslab_2',['ANB_FifoSlab',['../structANB__FifoSlab.html',1,'ANB_FifoSlab'],['../group__ANB__FifoSlab.html',1,'ANB_FifoSlab']]],
   ['anb_5ffifoslab_5fcreate_3',['ANB_fifoslab_create',['../group__ANB__FifoSlab.html#ga85588d50f388a26090f4009a9bc5cff3',1,'ANB_fifoslab_create(size_t initial_size):&#160;fifoslab.c'],['../group__ANB__FifoSlab.html#ga85588d50f388a26090f4009a9bc5cff3',1,'ANB_fifoslab_create(size_t initial_size):&#160;fifoslab.c']]],
@@ -14,5 +14,5 @@ var searchData=
   ['anb_5ffifoslab_5ft_11',['ANB_FifoSlab_t',['../group__ANB__FifoSlab.html#ga46c805103d80a911a68afbafd9a9898a',1,'fifoslab.h']]],
   ['anb_5ffifoslabiter_12',['ANB_FifoSlabIter',['../structANB__FifoSlabIter.html',1,'']]],
   ['anb_5ffifoslabiter_5ft_13',['ANB_FifoSlabIter_t',['../group__ANB__FifoSlab.html#ga54096c3dd8725c2a84c05fa89a0b0b0e',1,'fifoslab.h']]],
-  ['and_20size_20recovery_14',['Alignment and size recovery',['../md_Alloc-N-Buffer.html#autotoc_md4',1,'']]]
+  ['and_20size_20tracking_14',['Alignment and size tracking',['../md_Alloc-N-Buffer.html#autotoc_md4',1,'']]]
 ];

@@ -142,7 +142,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Opaque FIFO slab allocator / buffer queue with item tracking. </p>
-<p>All pushed data is padded to max_align_t alignment. Sizes reported by peek_item and pop_item reflect the aligned size, not the original data_len passed to push_item. </p>
+<p>All pushed data is padded to max_align_t alignment. Sizes reported by peek_item and pop_item reflect the original data_len passed to push_item, not the aligned size. </p>
 
 </div>
 </div>
@@ -271,7 +271,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">queue</td><td>The queue. Must not be NULL. </td></tr>
     <tr><td class="paramname">n</td><td>Zero-based index (0 = first unconsumed item). </td></tr>
-    <tr><td class="paramname">out_size</td><td>If non-NULL, receives the item's aligned size in bytes (i.e. ALIGN_UP(data_len), not the original data_len). </td></tr>
+    <tr><td class="paramname">out_size</td><td>If non-NULL, receives the item's original size in bytes (i.e. the data_len passed to push_item). </td></tr>
   </table>
   </dd>
 </dl>
@@ -309,7 +309,7 @@ Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">queue</td><td>The queue. Must not be NULL. </td></tr>
     <tr><td class="paramname">iter</td><td>Iterator state. Zero-initialize before first call. </td></tr>
-    <tr><td class="paramname">out_size</td><td>If non-NULL, receives the item's aligned size in bytes. </td></tr>
+    <tr><td class="paramname">out_size</td><td>If non-NULL, receives the item's original size in bytes. </td></tr>
   </table>
   </dd>
 </dl>
@@ -340,7 +340,7 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>Aligned size of the popped item in bytes, or 0 if empty. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>Original size of the popped item in bytes, or 0 if empty. </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>When all items are consumed, internal positions reset to reuse buffer space. </dd></dl>
 
 </div>

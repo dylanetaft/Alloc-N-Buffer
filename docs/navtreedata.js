@@ -29,7 +29,7 @@ var NAVTREE =
       [ "What it does", "md_Alloc-N-Buffer.html#autotoc_md1", null ],
       [ "Quick start", "md_Alloc-N-Buffer.html#autotoc_md2", null ],
       [ "Building", "md_Alloc-N-Buffer.html#autotoc_md3", null ],
-      [ "Alignment and size recovery", "md_Alloc-N-Buffer.html#autotoc_md4", null ],
+      [ "Alignment and size tracking", "md_Alloc-N-Buffer.html#autotoc_md4", null ],
       [ "Key behaviors", "md_Alloc-N-Buffer.html#autotoc_md5", null ]
     ] ],
     [ "Topics", "topics.html", "topics" ],
