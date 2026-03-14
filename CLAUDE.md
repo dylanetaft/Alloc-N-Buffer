@@ -2,7 +2,7 @@
 
 ## Project overview
 
-C library providing `ANB_FifoSlab` -- a FIFO slab allocator / buffer queue. Single header (`include/fifoslab.h`), single source (`src/fifoslab.c`).
+C library providing `ANB_Slab` -- a slab allocator / buffer queue. Single header (`include/slab.h`), single source (`src/slab.c`).
 
 ## Build
 
@@ -12,15 +12,15 @@ cmake -B build -DBUILD_TESTS=ON && cmake --build build && ctest --test-dir build
 
 Fuzzer (clang only):
 ```sh
-cmake -B build -DBUILD_FUZZ=ON && cmake --build build --target fuzz_fifoslab
+cmake -B build -DBUILD_FUZZ=ON && cmake --build build --target fuzz_slab
 ```
 
 ## Architecture
 
-- **Header**: `include/fifoslab.h` -- public API, opaque `ANB_FifoSlab_t` type
-- **Implementation**: `src/fifoslab.c` -- struct definition, all functions
-- **Tests**: `tests/test_fifoslab.c` -- Unity framework tests
-- **Fuzzer**: `fuzz/fuzz_fifoslab.c` -- libFuzzer harness
+- **Header**: `include/slab.h` -- public API, opaque `ANB_Slab_t` type
+- **Implementation**: `src/slab.c` -- struct definition, all functions
+- **Tests**: `tests/test_slab.c` -- Unity framework tests
+- **Fuzzer**: `fuzz/fuzz_slab.c` -- libFuzzer harness
 
 CMake produces both static (`allocnbuffer_static`) and shared (`allocnbuffer_shared`) libraries from a single object library.
 
@@ -28,38 +28,47 @@ CMake produces both static (`allocnbuffer_static`) and shared (`allocnbuffer_sha
 
 All pushed data is padded to `max_align_t` alignment (typically 16 bytes on 64-bit). Data pointers returned by peek are always aligned. However, the original `data_len` is preserved:
 
-- `peek_item(q, n, &size)` writes the **original** `data_len` to `*size`
-- `pop_item()` returns the **original** `data_len`
-- `size()` returns the total bytes in use (sum of **aligned** item sizes, since that reflects actual buffer consumption)
+- `peek_item_iter(q, &iter, &size)` writes the **original** `data_len` to `*size`
+- `size()` returns total bytes written (`write_pos`) — this includes aligned padding and deleted items
 
 Use `ALIGN_UP(x) = ((x + _Alignof(max_align_t) - 1) & ~(_Alignof(max_align_t) - 1))` to compute aligned sizes from original data lengths if needed.
 
-Internally, a parallel `uint8_t *pad_index` tracks the padding offset added to each item. This shares `index_read`/`index_write`/`index_cap` with the main `size_t *index`.
+Internally, a parallel `uint8_t *metadata` array tracks per-item state. The low nibble (`& 0x0F`) stores the padding offset added to each item. The high nibble (`& 0xF0`) stores flags (e.g., deleted). This shares `index_write`/`index_cap` with the main `size_t *index`.
 
 ## API at a glance
 
 | Function | Purpose |
 |---|---|
-| `ANB_fifoslab_create(size)` | Allocate queue with initial capacity (aborts on failure) |
-| `ANB_fifoslab_destroy(q)` | Free queue (NULL-safe) |
-| `ANB_fifoslab_push_item(q, data, len)` | Append data as a discrete item (auto-grows, pads to alignment) |
-| `ANB_fifoslab_size(q)` | Total bytes in use (sum of aligned item sizes) |
-| `ANB_fifoslab_item_count(q)` | Number of discrete items |
-| `ANB_fifoslab_peek_item(q, n, &sz)` | Pointer to item n, or NULL (O(n) offset walk); `sz` receives original data_len |
-| `ANB_fifoslab_peek_item_iter(q, &iter, &sz)` | O(1) per-step item iterator, returns NULL when done; `sz` receives original data_len |
-| `ANB_fifoslab_pop_item(q)` | Remove first item, returns original data_len or 0 |
+| `ANB_slab_create(size)` | Allocate queue with initial capacity (aborts on failure) |
+| `ANB_slab_destroy(q)` | Free queue (NULL-safe) |
+| `ANB_slab_push_item(q, data, len)` | Append data as a discrete item (auto-grows, pads to alignment) |
+| `ANB_slab_size(q)` | Total bytes written (includes padding and deleted items) |
+| `ANB_slab_item_count(q)` | Number of non-deleted items |
+| `ANB_slab_peek_item_iter(q, &iter, &sz)` | O(1) per-step item iterator, skips deleted items, returns NULL when done; `sz` receives original data_len |
+| `ANB_slab_pop_item(q, &iter)` | Mark current iterator item as deleted. Pass NULL to pop first non-deleted item. Returns 0 on success, -1 on failure |
+
+## Iterator usage
+
+Use `ANB_SlabIter_t` (zero-initialize) to iterate items. The iterator tracks current (`_idx`/`_ptr`) and next (`_n_idx`/`_n_ptr`) positions internally.
+
+- **Popping while iterating is safe.** Deleted items are skipped automatically.
+- **Pushing while iterating is undefined behavior** — realloc may invalidate iterator pointers.
+- When all items are deleted, `write_pos` and `index_write` reset to 0 for buffer reuse. A subsequent `peek_item_iter` call returns NULL.
+- The iterator can be saved and reused as a read cursor for queue-like consumption patterns.
 
 ## Performance notes
 
-This is a FIFO structure. For front-to-back consumption, use `pop_item` (O(1) per call). To inspect items without consuming, use the `peek_item_iter` API with an `ANB_FifoSlabIter_t` (zero-initialize, O(1) per step). Do **not** iterate with `peek_item(q, 0..N-1)` in a loop — `peek_item` walks the index from the start each call, making that pattern O(N²). Pushing or popping while an iterator is live is undefined behavior.
-
 Data is stored in a contiguous buffer with a contiguous `size_t[]` index, so cache locality is excellent compared to a linked list. No per-item heap allocations.
+
+- `peek_item_iter`: O(1) per non-deleted item
+- `pop_item` with iter: O(1)
+- `pop_item` with NULL: O(n) in the worst case (scans for first non-deleted item)
 
 ## Conventions
 
-- Prefix: `ANB_fifoslab_` for all public symbols
-- Internal macros: `ANB_FS_` prefix
-- Error handling: `assert()` for preconditions (NULL queue, NULL data, zero initial_size). No graceful error returns except where documented (peek_item returns NULL, pop_item returns 0).
+- Prefix: `ANB_slab_` for all public symbols
+- Internal macros: `ANB_S_` prefix
+- Error handling: `assert()` for preconditions (NULL queue, NULL data, zero initial_size). `pop_item` returns -1 on failure (empty, already deleted).
 
 ## Using as a dependency
 
@@ -68,4 +77,4 @@ add_subdirectory(path/to/Alloc-N-Buffer)
 target_link_libraries(your_target allocnbuffer_static)
 ```
 
-The `include/` directory is exported via `BUILD_INTERFACE`, so `#include "fifoslab.h"` works automatically.
+The `include/` directory is exported via `BUILD_INTERFACE`, so `#include "slab.h"` works automatically.

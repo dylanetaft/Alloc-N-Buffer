@@ -92,32 +92,46 @@ $(function(){initNavTree('md_Alloc-N-Buffer.html','',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="autotoc_md0"></a></p>
-<p>A C library providing <span class="tt"><a class="el" href="structANB__FifoSlab.html">ANB_FifoSlab</a></span> &ndash; a FIFO slab allocator that doubles as a buffer queue with item tracking.</p>
+<p>A C library providing <span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span> &ndash; a slab allocator that doubles as a buffer queue with item tracking.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md1"></a>
 What it does</h1>
-<p><span class="tt"><a class="el" href="structANB__FifoSlab.html">ANB_FifoSlab</a></span> is a growable, contiguous byte buffer with internal tracking of each push as indexed offsets to the item data. It supports pushing arbitrary byte arrays, and peeking/popping them back in FIFO order. The internal buffer grows as needed, and when all data is consumed, it resets to offset 0 for reuse.</p>
+<p><span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span> is a growable, contiguous byte buffer with internal tracking of each push as indexed offsets to the item data. It supports pushing arbitrary byte arrays, and iterating/deleting them. The internal buffer grows as needed, and when all items are deleted, it resets to offset 0 for reuse.</p>
 <p>All data is stored with <span class="tt">max_align_t</span> alignment padding, so structs can be pushed and read back without alignment concerns. You can also store structs as headers next to variable-length binary data within a single item.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md2"></a>
 Quick start</h1>
-<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="fifoslab_8h.html">fifoslab.h</a>&quot;</span></div>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="slab_8h.html">slab.h</a>&quot;</span></div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_typedef" href="group__ANB__FifoSlab.html#ga46c805103d80a911a68afbafd9a9898a">ANB_FifoSlab_t</a> *q = <a class="code hl_function" href="group__ANB__FifoSlab.html#ga85588d50f388a26090f4009a9bc5cff3">ANB_fifoslab_create</a>(1024);</div>
+<div class="line"><a class="code hl_typedef" href="group__ANB__Slab.html#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *q = <a class="code hl_function" href="group__ANB__Slab.html#gac2857725c6782de709fa6d310e5a12c1">ANB_slab_create</a>(1024);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Push some items</span></div>
-<div class="line">ANB_fifoslab_push(q, (<span class="keyword">const</span> uint8_t *)<span class="stringliteral">&quot;hello&quot;</span>, 6);</div>
-<div class="line">ANB_fifoslab_push(q, (<span class="keyword">const</span> uint8_t *)<span class="stringliteral">&quot;world&quot;</span>, 6);</div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#ga1b013996a5adc6af27aa3e43c919f9ce">ANB_slab_push_item</a>(q, (<span class="keyword">const</span> uint8_t *)<span class="stringliteral">&quot;hello&quot;</span>, 6);</div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#ga1b013996a5adc6af27aa3e43c919f9ce">ANB_slab_push_item</a>(q, (<span class="keyword">const</span> uint8_t *)<span class="stringliteral">&quot;world&quot;</span>, 6);</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// Item-level access</span></div>
-<div class="line"><span class="keywordtype">size_t</span> count = <a class="code hl_function" href="group__ANB__FifoSlab.html#ga6e45c9a19e16100560dbb119101e0c95">ANB_fifoslab_item_count</a>(q);  <span class="comment">// 2</span></div>
+<div class="line"><span class="comment">// Iterate items</span></div>
+<div class="line"><a class="code hl_typedef" href="group__ANB__Slab.html#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> iter = {0};</div>
 <div class="line"><span class="keywordtype">size_t</span> item_size;</div>
-<div class="line">uint8_t *data = <a class="code hl_function" href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a>(q, 0, &amp;item_size);  <span class="comment">// &quot;hello&quot;</span></div>
-<div class="line"><a class="code hl_function" href="group__ANB__FifoSlab.html#ga8fbdac843949ee17f28178df3a197de9">ANB_fifoslab_pop_item</a>(q);  <span class="comment">// removes &quot;hello&quot;, returns original size (6)</span></div>
-<div class="ttc" id="afifoslab_8h_html"><div class="ttname"><a href="fifoslab_8h.html">fifoslab.h</a></div><div class="ttdoc">ANB_FifoSlab public API — FIFO slab allocator with item tracking.</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga46c805103d80a911a68afbafd9a9898a"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga46c805103d80a911a68afbafd9a9898a">ANB_FifoSlab_t</a></div><div class="ttdeci">struct ANB_FifoSlab ANB_FifoSlab_t</div><div class="ttdoc">Opaque FIFO slab allocator / buffer queue with item tracking.</div><div class="ttdef"><b>Definition</b> fifoslab.h:22</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga6e45c9a19e16100560dbb119101e0c95"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga6e45c9a19e16100560dbb119101e0c95">ANB_fifoslab_item_count</a></div><div class="ttdeci">size_t ANB_fifoslab_item_count(ANB_FifoSlab_t *queue)</div><div class="ttdoc">Get the number of discrete items in the queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:102</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga85588d50f388a26090f4009a9bc5cff3"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga85588d50f388a26090f4009a9bc5cff3">ANB_fifoslab_create</a></div><div class="ttdeci">ANB_FifoSlab_t * ANB_fifoslab_create(size_t initial_size)</div><div class="ttdoc">Create a new buffer queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:26</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga8fbdac843949ee17f28178df3a197de9"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga8fbdac843949ee17f28178df3a197de9">ANB_fifoslab_pop_item</a></div><div class="ttdeci">size_t ANB_fifoslab_pop_item(ANB_FifoSlab_t *queue)</div><div class="ttdoc">Pop the first item from the queue.</div><div class="ttdef"><b>Definition</b> fifoslab.c:150</div></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_gac24a0e13b4d59b7ea5e4fa2408a47946"><div class="ttname"><a href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a></div><div class="ttdeci">uint8_t * ANB_fifoslab_peek_item(ANB_FifoSlab_t *queue, size_t n, size_t *out_size)</div><div class="ttdoc">Peek at a specific item by index without consuming.</div><div class="ttdef"><b>Definition</b> fifoslab.c:107</div></div>
+<div class="line">uint8_t *data;</div>
+<div class="line"><span class="keywordflow">while</span> ((data = <a class="code hl_function" href="group__ANB__Slab.html#ga77ee357b0dafbbe0a365de79a5f4df0a">ANB_slab_peek_item_iter</a>(q, &amp;iter, &amp;item_size)) != NULL) {</div>
+<div class="line">    printf(<span class="stringliteral">&quot;%.*s\n&quot;</span>, (<span class="keywordtype">int</span>)item_size, data);</div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Pop first non-deleted item</span></div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#ga9c777f05bf2e80c26e79fc57b3a58fd6">ANB_slab_pop_item</a>(q, NULL);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Or pop via iterator</span></div>
+<div class="line"><a class="code hl_typedef" href="group__ANB__Slab.html#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> iter2 = {0};</div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#ga77ee357b0dafbbe0a365de79a5f4df0a">ANB_slab_peek_item_iter</a>(q, &amp;iter2, &amp;item_size);  <span class="comment">// advance to first item</span></div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#ga9c777f05bf2e80c26e79fc57b3a58fd6">ANB_slab_pop_item</a>(q, &amp;iter2);                     <span class="comment">// delete it</span></div>
+<div class="line"> </div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#gad84beecc68ba1e03389af8335d02c41f">ANB_slab_destroy</a>(q);</div>
+<div class="ttc" id="agroup__ANB__Slab_html_ga1b013996a5adc6af27aa3e43c919f9ce"><div class="ttname"><a href="group__ANB__Slab.html#ga1b013996a5adc6af27aa3e43c919f9ce">ANB_slab_push_item</a></div><div class="ttdeci">void ANB_slab_push_item(ANB_Slab_t *queue, const uint8_t *data, size_t data_len)</div><div class="ttdoc">Push data onto the end of the queue as a discrete item.</div><div class="ttdef"><b>Definition</b> slab.c:56</div></div>
+<div class="ttc" id="agroup__ANB__Slab_html_ga43163b2163998a535fa7bd8eb5cb4f00"><div class="ttname"><a href="group__ANB__Slab.html#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a></div><div class="ttdeci">struct ANB_SlabIter ANB_SlabIter_t</div><div class="ttdoc">Iterator state for O(1)-per-step item traversal. Use peek_item_iter if you need to iterate through al...</div></div>
+<div class="ttc" id="agroup__ANB__Slab_html_ga6d215eda629f858265a72c875a627458"><div class="ttname"><a href="group__ANB__Slab.html#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a></div><div class="ttdeci">struct ANB_Slab ANB_Slab_t</div><div class="ttdoc">Opaque slab allocator / buffer queue with item tracking.</div><div class="ttdef"><b>Definition</b> slab.h:22</div></div>
+<div class="ttc" id="agroup__ANB__Slab_html_ga77ee357b0dafbbe0a365de79a5f4df0a"><div class="ttname"><a href="group__ANB__Slab.html#ga77ee357b0dafbbe0a365de79a5f4df0a">ANB_slab_peek_item_iter</a></div><div class="ttdeci">uint8_t * ANB_slab_peek_item_iter(ANB_Slab_t *queue, ANB_SlabIter_t *iter, size_t *out_size)</div><div class="ttdoc">Iterate items in FIFO order, O(1) per call.</div><div class="ttdef"><b>Definition</b> slab.c:107</div></div>
+<div class="ttc" id="agroup__ANB__Slab_html_ga9c777f05bf2e80c26e79fc57b3a58fd6"><div class="ttname"><a href="group__ANB__Slab.html#ga9c777f05bf2e80c26e79fc57b3a58fd6">ANB_slab_pop_item</a></div><div class="ttdeci">int ANB_slab_pop_item(ANB_Slab_t *queue, ANB_SlabIter_t *iter)</div><div class="ttdoc">Pop the first item from the queue.</div><div class="ttdef"><b>Definition</b> slab.c:142</div></div>
+<div class="ttc" id="agroup__ANB__Slab_html_gac2857725c6782de709fa6d310e5a12c1"><div class="ttname"><a href="group__ANB__Slab.html#gac2857725c6782de709fa6d310e5a12c1">ANB_slab_create</a></div><div class="ttdeci">ANB_Slab_t * ANB_slab_create(size_t initial_size)</div><div class="ttdoc">Create a new buffer queue.</div><div class="ttdef"><b>Definition</b> slab.c:28</div></div>
+<div class="ttc" id="agroup__ANB__Slab_html_gad84beecc68ba1e03389af8335d02c41f"><div class="ttname"><a href="group__ANB__Slab.html#gad84beecc68ba1e03389af8335d02c41f">ANB_slab_destroy</a></div><div class="ttdeci">void ANB_slab_destroy(ANB_Slab_t *queue)</div><div class="ttdoc">Destroy a buffer queue and free its memory.</div><div class="ttdef"><b>Definition</b> slab.c:47</div></div>
+<div class="ttc" id="aslab_8h_html"><div class="ttname"><a href="slab_8h.html">slab.h</a></div><div class="ttdoc">ANB_Slab public API — slab allocator with item tracking.</div></div>
 </div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
 Building</h1>
 <div class="fragment"><div class="line">cmake -B build</div>
@@ -126,30 +140,30 @@ Building</h1>
 <div class="line">cmake --build build</div>
 <div class="line">ctest --test-dir build --output-on-failure</div>
 </div><!-- fragment --><p>With fuzzing (requires clang): </p><div class="fragment"><div class="line">cmake -B build -DBUILD_FUZZ=ON</div>
-<div class="line">cmake --build build --target fuzz_fifoslab</div>
-<div class="line">./build/fuzz_fifoslab -max_total_time=60</div>
+<div class="line">cmake --build build --target fuzz_slab</div>
+<div class="line">./build/fuzz_slab -max_total_time=60</div>
 </div><!-- fragment --><h1 class="doxsection"><a class="anchor" id="autotoc_md4"></a>
 Alignment and size tracking</h1>
-<p>Every push pads the data up to the next <span class="tt">max_align_t</span> boundary (typically 16 bytes on 64-bit systems). This means the buffer may store <b>more bytes than you pushed</b> internally. However, the original <span class="tt">data_len</span> is preserved and returned by the API:</p>
+<p>Every push pads the data up to the next <span class="tt">max_align_t</span> boundary (typically 16 bytes on 64-bit systems). This means the buffer may store <b>more bytes than you pushed</b> internally. However, the original <span class="tt">data_len</span> is preserved and returned by the iterator:</p>
 <ul>
-<li><span class="tt">peek_item</span> writes the original <span class="tt">data_len</span> to <span class="tt">*out_size</span></li>
-<li><span class="tt">pop_item</span> returns the original <span class="tt">data_len</span></li>
-<li><span class="tt">size()</span> returns total <b>aligned</b> bytes in use (reflecting actual buffer consumption)</li>
+<li><span class="tt">peek_item_iter</span> writes the original <span class="tt">data_len</span> to <span class="tt">*out_size</span></li>
+<li><span class="tt">size()</span> returns total bytes written (includes alignment padding and deleted items)</li>
 </ul>
-<p>For example, pushing a 7-byte <span class="tt">uint8_t[]</span> consumes 16 bytes in the buffer, but <span class="tt">peek_item</span> will report <span class="tt">out_size = 7</span>.</p>
+<p>For example, pushing a 7-byte <span class="tt">uint8_t[]</span> consumes 16 bytes in the buffer, but <span class="tt">peek_item_iter</span> will report <span class="tt">out_size = 7</span>.</p>
 <div class="fragment"><div class="line">uint8_t blob[7] = { ... };</div>
-<div class="line"><a class="code hl_function" href="group__ANB__FifoSlab.html#ga4875699f398f535e9325e81fe230fee8">ANB_fifoslab_push_item</a>(q, blob, 7);</div>
+<div class="line"><a class="code hl_function" href="group__ANB__Slab.html#ga1b013996a5adc6af27aa3e43c919f9ce">ANB_slab_push_item</a>(q, blob, 7);</div>
 <div class="line"> </div>
+<div class="line"><a class="code hl_typedef" href="group__ANB__Slab.html#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> iter = {0};</div>
 <div class="line"><span class="keywordtype">size_t</span> sz;</div>
-<div class="line">uint8_t *data = <a class="code hl_function" href="group__ANB__FifoSlab.html#gac24a0e13b4d59b7ea5e4fa2408a47946">ANB_fifoslab_peek_item</a>(q, 0, &amp;sz);  <span class="comment">// sz == 7, data is 16-byte aligned</span></div>
-<div class="ttc" id="agroup__ANB__FifoSlab_html_ga4875699f398f535e9325e81fe230fee8"><div class="ttname"><a href="group__ANB__FifoSlab.html#ga4875699f398f535e9325e81fe230fee8">ANB_fifoslab_push_item</a></div><div class="ttdeci">void ANB_fifoslab_push_item(ANB_FifoSlab_t *queue, const uint8_t *data, size_t data_len)</div><div class="ttdoc">Push data onto the end of the queue as a discrete item.</div><div class="ttdef"><b>Definition</b> fifoslab.c:58</div></div>
+<div class="line">uint8_t *data = <a class="code hl_function" href="group__ANB__Slab.html#ga77ee357b0dafbbe0a365de79a5f4df0a">ANB_slab_peek_item_iter</a>(q, &amp;iter, &amp;sz);  <span class="comment">// sz == 7, data is 16-byte aligned</span></div>
 </div><!-- fragment --><p>As bytes are aligned, you may directly cast the returned pointer to a struct type if you know the layout, or use it as a header for variable-length data.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md5"></a>
 Key behaviors</h1>
 <ul>
 <li>Buffer and item index grow automatically (doubling strategy).</li>
-<li>When all data is consumed, internal positions reset to offset 0, reusing the buffer without reallocation.</li>
-<li>All sizes returned by <span class="tt">peek_item</span>, <span class="tt">pop_item</span> are the <b>original</b> <span class="tt">data_len</span>. Use <span class="tt"><a class="el" href="group__ANB__FifoSlab.html#gacff07453b8629c5f5c6f72daad54df63" title="Get the total number of bytes currently in use (including alignment padding).">ANB_fifoslab_size()</a></span> for total aligned buffer consumption.</li>
+<li>When all items are deleted, internal positions reset to offset 0, reusing the buffer without reallocation.</li>
+<li>Items are deleted by marking them in per-item metadata; the iterator skips deleted items automatically.</li>
+<li>Popping while iterating is safe. Pushing while iterating is undefined behavior (realloc may invalidate pointers).</li>
 <li>Allocation failures abort via <span class="tt">assert()</span>. </li>
 </ul>
 </div></div><!-- contents -->

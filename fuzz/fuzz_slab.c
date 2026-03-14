@@ -1,16 +1,16 @@
-#include "fifoslab.h"
+#include "slab.h"
 #include <stdint.h>
 #include <stddef.h>
 
 /*
- * libFuzzer harness for ANB_FifoSlab.
+ * libFuzzer harness for ANB_Slab.
  *
  * Interprets fuzz input as a stream of commands:
  *   0 = push_item   (next 2 bytes = length LE, then that many bytes = data)
- *   1 = pop_item
- *   2 = peek_item   (next 1 byte  = index)
+ *   1 = pop_item with NULL iter (pops first non-deleted)
+ *   2 = peek_item_iter (iterate all items from the start)
  *   3 = item_count
- *   4 = peek_item_iter (iterate all items from the start)
+ *   4 = pop_item via iterator (iterate to Nth item, pop it)
  *   5 = size
  *
  * Goal: no crashes, no ASAN/UBSAN violations under any input.
@@ -21,7 +21,7 @@ static uint16_t read_u16(const uint8_t *p) {
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-    ANB_FifoSlab_t *q = ANB_fifoslab_create(64);
+    ANB_Slab_t *q = ANB_slab_create(64);
 
     size_t i = 0;
     while (i < size) {
@@ -36,43 +36,51 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
             if (len > 4096) len = 4096;
             if (len == 0) break;
             if (i + len > size) len = (uint16_t)(size - i);
-            ANB_fifoslab_push_item(q, data + i, len);
+            ANB_slab_push_item(q, data + i, len);
             i += len;
             break;
         }
-        case 1: { /* pop_item */
-            ANB_fifoslab_pop_item(q);
+        case 1: { /* pop_item with NULL iter */
+            ANB_slab_pop_item(q, NULL);
             break;
         }
-        case 2: { /* peek_item */
-            if (i + 1 > size) goto done;
-            uint8_t idx = data[i++];
-            size_t item_size = 0;
-            volatile uint8_t *p = ANB_fifoslab_peek_item(q, idx, &item_size);
-            if (p) { (void)*p; }
-            break;
-        }
-        case 3: { /* item_count */
-            ANB_fifoslab_item_count(q);
-            break;
-        }
-        case 4: { /* peek_item_iter — iterate all items */
-            ANB_FifoSlabIter_t iter = {0};
+        case 2: { /* peek_item_iter — iterate all items */
+            ANB_SlabIter_t iter = {0};
             size_t item_size = 0;
             volatile uint8_t *p;
-            while ((p = ANB_fifoslab_peek_item_iter(q, &iter, &item_size)) != NULL) {
+            while ((p = ANB_slab_peek_item_iter(q, &iter, &item_size)) != NULL) {
                 (void)*p;
             }
             break;
         }
+        case 3: { /* item_count */
+            ANB_slab_item_count(q);
+            break;
+        }
+        case 4: { /* pop via iterator — iterate to Nth item and pop */
+            if (i + 1 > size) goto done;
+            uint8_t n = data[i++];
+            ANB_SlabIter_t iter = {0};
+            size_t item_size = 0;
+            uint8_t *p;
+            uint8_t seen = 0;
+            while ((p = ANB_slab_peek_item_iter(q, &iter, &item_size)) != NULL) {
+                if (seen == n) {
+                    ANB_slab_pop_item(q, &iter);
+                    break;
+                }
+                seen++;
+            }
+            break;
+        }
         case 5: { /* size */
-            ANB_fifoslab_size(q);
+            ANB_slab_size(q);
             break;
         }
         }
     }
 
 done:
-    ANB_fifoslab_destroy(q);
+    ANB_slab_destroy(q);
     return 0;
 }

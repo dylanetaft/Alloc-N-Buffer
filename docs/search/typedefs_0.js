@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['anb_5ffifoslab_5ft_0',['ANB_FifoSlab_t',['../group__ANB__FifoSlab.html#ga46c805103d80a911a68afbafd9a9898a',1,'fifoslab.h']]],
-  ['anb_5ffifoslabiter_5ft_1',['ANB_FifoSlabIter_t',['../group__ANB__FifoSlab.html#ga54096c3dd8725c2a84c05fa89a0b0b0e',1,'fifoslab.h']]]
+  ['anb_5fslab_5ft_0',['ANB_Slab_t',['../group__ANB__Slab.html#ga6d215eda629f858265a72c875a627458',1,'slab.h']]],
+  ['anb_5fslabiter_5ft_1',['ANB_SlabIter_t',['../group__ANB__Slab.html#ga43163b2163998a535fa7bd8eb5cb4f00',1,'slab.h']]]
 ];

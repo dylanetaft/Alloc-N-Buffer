@@ -1,5 +1,5 @@
 var annotated_dup =
 [
-    [ "ANB_FifoSlab", "structANB__FifoSlab.html", null ],
-    [ "ANB_FifoSlabIter", "structANB__FifoSlabIter.html", null ]
+    [ "ANB_Slab", "structANB__Slab.html", null ],
+    [ "ANB_SlabIter", "structANB__SlabIter.html", null ]
 ];
