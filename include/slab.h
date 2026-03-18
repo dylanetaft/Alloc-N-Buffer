@@ -38,13 +38,27 @@ void ANB_slab_destroy(ANB_Slab_t* queue);
 
 /**
  * @ingroup ANB_Slab
+ * @brief Allocate space for an item without copying data.
+ * @param queue The queue. Must not be NULL.
+ * @param data_len Number of bytes to reserve.
+ * @return Pointer to the allocated region (at least data_len bytes, aligned
+ *         to max_align_t). The caller is responsible for filling the memory.
+ * @note The item is immediately tracked (counted, indexed). Buffer and item
+ *       index grow automatically if needed. Padding bytes are uninitialized.
+ * @warning Pushing or allocating while an iterator is live is undefined
+ *          behavior (realloc may invalidate pointers).
+ */
+uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len);
+
+/**
+ * @ingroup ANB_Slab
  * @brief Push data onto the end of the queue as a discrete item.
  * @param queue The queue. Must not be NULL.
  * @param data Pointer to data to copy. Must not be NULL.
  * @param data_len Number of bytes to copy.
  * @note Data is stored with max_align_t alignment padding. The buffer
  *       consumes ALIGN_UP(data_len) bytes internally. Padding bytes are
- *       zeroed. Buffer and item index grow automatically if needed.
+ *       uninitialized. Buffer and item index grow automatically if needed.
  */
 void ANB_slab_push_item(ANB_Slab_t* queue, const uint8_t* data, size_t data_len);
 
@@ -103,3 +117,13 @@ uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t
  * @note When all items are consumed, internal positions reset to reuse buffer space.
  */
 int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter);
+
+/**
+ * @ingroup ANB_Slab
+ * @brief Pop an item and securely zero its data to prevent sensitive data from lingering in memory.
+ * @param queue The queue. Must not be NULL.
+ * @param iter Optional iterator pointing to the item to pop. If NULL, pops the first non-deleted item.
+ * @return 0 on success, -1 on failure (empty queue or already deleted).
+ * @note Uses volatile writes to prevent the compiler from optimizing out the zeroing.
+ */
+int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter);

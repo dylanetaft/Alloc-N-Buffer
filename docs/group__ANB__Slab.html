@@ -113,6 +113,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:gac2857725c6782de709fa6d310e5a12c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new buffer queue.  <br /></td></tr>
 <tr class="memitem:gad84beecc68ba1e03389af8335d02c41f" id="r_gad84beecc68ba1e03389af8335d02c41f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gad84beecc68ba1e03389af8335d02c41f">ANB_slab_destroy</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue)</td></tr>
 <tr class="memdesc:gad84beecc68ba1e03389af8335d02c41f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy a buffer queue and free its memory.  <br /></td></tr>
+<tr class="memitem:ga329c52657177d26758d1f862a690922d" id="r_ga329c52657177d26758d1f862a690922d"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga329c52657177d26758d1f862a690922d">ANB_slab_alloc_item</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, size_t data_len)</td></tr>
+<tr class="memdesc:ga329c52657177d26758d1f862a690922d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate space for an item without copying data.  <br /></td></tr>
 <tr class="memitem:ga1b013996a5adc6af27aa3e43c919f9ce" id="r_ga1b013996a5adc6af27aa3e43c919f9ce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga1b013996a5adc6af27aa3e43c919f9ce">ANB_slab_push_item</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, const uint8_t *data, size_t data_len)</td></tr>
 <tr class="memdesc:ga1b013996a5adc6af27aa3e43c919f9ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push data onto the end of the queue as a discrete item.  <br /></td></tr>
 <tr class="memitem:gaecd58d7e8b4ae4c4b267d7adbf301150" id="r_gaecd58d7e8b4ae4c4b267d7adbf301150"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaecd58d7e8b4ae4c4b267d7adbf301150">ANB_slab_size</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue)</td></tr>
@@ -123,6 +125,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga77ee357b0dafbbe0a365de79a5f4df0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Iterate items in FIFO order, O(1) per call.  <br /></td></tr>
 <tr class="memitem:ga9c777f05bf2e80c26e79fc57b3a58fd6" id="r_ga9c777f05bf2e80c26e79fc57b3a58fd6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga9c777f05bf2e80c26e79fc57b3a58fd6">ANB_slab_pop_item</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, <a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *iter)</td></tr>
 <tr class="memdesc:ga9c777f05bf2e80c26e79fc57b3a58fd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop the first item from the queue.  <br /></td></tr>
+<tr class="memitem:gad7bd595ecc8818a305b1375d0b6c51fd" id="r_gad7bd595ecc8818a305b1375d0b6c51fd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gad7bd595ecc8818a305b1375d0b6c51fd">ANB_slab_securepop_item</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, <a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *iter)</td></tr>
+<tr class="memdesc:gad7bd595ecc8818a305b1375d0b6c51fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop an item and securely zero its data to prevent sensitive data from lingering in memory.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <p>Slab allocator / buffer queue with item tracking. </p>
@@ -163,6 +167,39 @@ Functions</h2></td></tr>
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="ga329c52657177d26758d1f862a690922d" name="ga329c52657177d26758d1f862a690922d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga329c52657177d26758d1f862a690922d">&#9670;&#160;</a></span>ANB_slab_alloc_item()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t * ANB_slab_alloc_item </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *</td>          <td class="paramname"><span class="paramname"><em>queue</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>data_len</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Allocate space for an item without copying data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">queue</td><td>The queue. Must not be NULL. </td></tr>
+    <tr><td class="paramname">data_len</td><td>Number of bytes to reserve. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the allocated region (at least data_len bytes, aligned to max_align_t). The caller is responsible for filling the memory. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>The item is immediately tracked (counted, indexed). Buffer and item index grow automatically if needed. Padding bytes are uninitialized. </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Pushing or allocating while an iterator is live is undefined behavior (realloc may invalidate pointers). </dd></dl>
+
+</div>
+</div>
 <a id="gac2857725c6782de709fa6d310e5a12c1" name="gac2857725c6782de709fa6d310e5a12c1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gac2857725c6782de709fa6d310e5a12c1">&#9670;&#160;</a></span>ANB_slab_create()</h2>
 
@@ -343,7 +380,39 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section note"><dt>Note</dt><dd>Data is stored with max_align_t alignment padding. The buffer consumes ALIGN_UP(data_len) bytes internally. Padding bytes are zeroed. Buffer and item index grow automatically if needed. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Data is stored with max_align_t alignment padding. The buffer consumes ALIGN_UP(data_len) bytes internally. Padding bytes are uninitialized. Buffer and item index grow automatically if needed. </dd></dl>
+
+</div>
+</div>
+<a id="gad7bd595ecc8818a305b1375d0b6c51fd" name="gad7bd595ecc8818a305b1375d0b6c51fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad7bd595ecc8818a305b1375d0b6c51fd">&#9670;&#160;</a></span>ANB_slab_securepop_item()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ANB_slab_securepop_item </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *</td>          <td class="paramname"><span class="paramname"><em>queue</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *</td>          <td class="paramname"><span class="paramname"><em>iter</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Pop an item and securely zero its data to prevent sensitive data from lingering in memory. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">queue</td><td>The queue. Must not be NULL. </td></tr>
+    <tr><td class="paramname">iter</td><td>Optional iterator pointing to the item to pop. If NULL, pops the first non-deleted item. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, -1 on failure (empty queue or already deleted). </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Uses volatile writes to prevent the compiler from optimizing out the zeroing. </dd></dl>
 
 </div>
 </div>

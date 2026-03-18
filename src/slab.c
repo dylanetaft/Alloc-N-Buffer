@@ -53,9 +53,8 @@ void ANB_slab_destroy(ANB_Slab_t* queue) {
     }
 }
 
-void ANB_slab_push_item(ANB_Slab_t* queue, const uint8_t* data, size_t data_len) {
+uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len) {
     assert(queue != NULL);
-    assert(data != NULL);
 
     size_t aligned_len = ANB_S_ALIGN_UP(data_len);
 
@@ -71,10 +70,7 @@ void ANB_slab_push_item(ANB_Slab_t* queue, const uint8_t* data, size_t data_len)
         queue->size = new_size;
     }
 
-    // Copy data into buffer and zero padding
-    memcpy(queue->data + queue->write_pos, data, data_len);
-    if (aligned_len > data_len)
-        memset(queue->data + queue->write_pos + data_len, 0, aligned_len - data_len);
+    uint8_t *ptr = queue->data + queue->write_pos;
     queue->write_pos += aligned_len;
 
     // Expand index buffers if needed
@@ -92,6 +88,14 @@ void ANB_slab_push_item(ANB_Slab_t* queue, const uint8_t* data, size_t data_len)
     queue->metadata[queue->index_write] = (uint8_t)(aligned_len - data_len);
     queue->index[queue->index_write++] = aligned_len;
     queue->count++;
+
+    return ptr;
+}
+
+void ANB_slab_push_item(ANB_Slab_t* queue, const uint8_t* data, size_t data_len) {
+    assert(data != NULL);
+    uint8_t *ptr = ANB_slab_alloc_item(queue, data_len);
+    memcpy(ptr, data, data_len);
 }
 
 size_t ANB_slab_size(ANB_Slab_t* queue) {
@@ -152,9 +156,6 @@ int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
       idx = temp_iter._idx;
     }
 
-    if (queue->metadata[idx] & ANB_S_META_MASK) {
-        return -1; // already deleted
-    }
     queue->metadata[idx] = 0xF0; // Set high nibble - deleted
     queue->count--;
     // If all data consumed, reset everything
@@ -164,4 +165,29 @@ int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
     }
 
     return 0;
+}
+
+int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
+    assert(queue != NULL);
+    if (queue->count == 0) {
+        return -1;
+    }
+
+    size_t idx;
+    uint8_t *ptr;
+    if (iter) {
+        idx = iter->_idx;
+        ptr = iter->_ptr;
+    } else {
+        ANB_SlabIter_t temp_iter = {0};
+        ptr = ANB_slab_peek_item_iter(queue, &temp_iter, NULL);
+        if (!ptr) return -1;
+        idx = temp_iter._idx;
+    }
+
+    volatile uint8_t *p = (volatile uint8_t *)ptr;
+    size_t len = queue->index[idx];
+    while (len--) *p++ = 0;
+
+    return ANB_slab_pop_item(queue, iter);
 }
