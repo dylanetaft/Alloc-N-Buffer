@@ -45,8 +45,8 @@ void ANB_slab_destroy(ANB_Slab_t* queue);
  *         to max_align_t). The caller is responsible for filling the memory.
  * @note The item is immediately tracked (counted, indexed). Buffer and item
  *       index grow automatically if needed. Padding bytes are uninitialized.
- * @warning Pushing or allocating while an iterator is live is undefined
- *          behavior (realloc may invalidate pointers).
+ * @warning Any data pointer previously returned by peek_item_iter may be
+ *          invalidated by a push/alloc that grows the buffer.
  */
 uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len);
 
@@ -85,14 +85,17 @@ size_t ANB_slab_item_count(ANB_Slab_t* queue);
  * Initialize to zero before first use:
  *   ANB_SlabIter_t iter = {0};
  *
- * Pushing while an iterator is live is undefined behavior (realloc may
- * invalidate pointers). Popping is safe.
+ * Popping while iterating is safe — deleted items are skipped.
+ * Pushing while iterating is safe for the iterator state (offsets survive
+ * realloc), but any data pointer previously returned by peek_item_iter
+ * may be invalidated by a push that grows the buffer.
  */
 typedef struct ANB_SlabIter {
-    size_t _idx;     /* item index */
-    uint8_t *_ptr;   /* pointer to current item data, or NULL if iter is exhausted */
-    size_t _n_idx;
-    uint8_t *_n_ptr;
+    size_t _idx;     /* current item index */
+    size_t _off;     /* byte offset of current item from buffer base */
+    size_t _n_idx;   /* next item index */
+    size_t _n_off;   /* byte offset of next item from buffer base */
+    uint64_t _version; /* buffer generation when this iterator was created */
 } ANB_SlabIter_t;
 
 /**
@@ -127,3 +130,12 @@ int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter);
  * @note Uses volatile writes to prevent the compiler from optimizing out the zeroing.
  */
 int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter);
+
+/**
+ * @ingroup ANB_Slab
+ * @brief Check whether an iterator is still valid for the current buffer generation.
+ * @param queue The queue. Must not be NULL.
+ * @param iter The iterator to check. Must not be NULL.
+ * @return 1 if valid (version matches), 0 if stale (buffer has been reset since iterator was created).
+ */
+int ANB_slab_iter_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter);

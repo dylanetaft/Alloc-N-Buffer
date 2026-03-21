@@ -261,6 +261,41 @@ void test_reset_on_empty(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 8. Iterator version validity                                       */
+/* ------------------------------------------------------------------ */
+void test_iter_valid(void) {
+    ANB_Slab_t *q = ANB_slab_create(256);
+
+    ANB_slab_push_item(q, (const uint8_t *)"aaa", 4);
+    ANB_slab_push_item(q, (const uint8_t *)"bbb", 4);
+
+    ANB_SlabIter_t iter = {0};
+    size_t sz;
+    ANB_slab_peek_item_iter(q, &iter, &sz);
+
+    /* Iterator is valid while items exist */
+    TEST_ASSERT_EQUAL_INT(1, ANB_slab_iter_valid(q, &iter));
+
+    /* Pop all items — triggers reset and version increment */
+    ANB_slab_pop_item(q, NULL);
+    ANB_slab_pop_item(q, NULL);
+
+    /* Old iterator is now stale */
+    TEST_ASSERT_EQUAL_INT(0, ANB_slab_iter_valid(q, &iter));
+
+    /* Push new data, create fresh iterator — valid again */
+    ANB_slab_push_item(q, (const uint8_t *)"ccc", 4);
+    ANB_SlabIter_t iter2 = {0};
+    ANB_slab_peek_item_iter(q, &iter2, &sz);
+    TEST_ASSERT_EQUAL_INT(1, ANB_slab_iter_valid(q, &iter2));
+
+    /* Original iterator is still stale */
+    TEST_ASSERT_EQUAL_INT(0, ANB_slab_iter_valid(q, &iter));
+
+    ANB_slab_destroy(q);
+}
+
+/* ------------------------------------------------------------------ */
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_push_iterate_pop_strings);
@@ -270,5 +305,6 @@ int main(void) {
     RUN_TEST(test_double_delete);
     RUN_TEST(test_size);
     RUN_TEST(test_reset_on_empty);
+    RUN_TEST(test_iter_valid);
     return UNITY_END();
 }

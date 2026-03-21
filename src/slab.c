@@ -22,6 +22,8 @@ struct ANB_Slab {
   uint8_t *metadata;   // Parallel buffer: high nibble = flags, low nibble = padding
   size_t index_write;  // Number of entries written
   size_t index_cap;    // Capacity (number of slots)
+
+  uint64_t version;    // Incremented on buffer reset (all items consumed)
 };
 
 
@@ -112,25 +114,23 @@ uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t
     assert(queue != NULL);
     assert(iter != NULL);
 
+    if (iter->_idx == 0 && iter->_n_off == 0) {
+        iter->_version = queue->version;
+    }
+
     for (;;) {
       iter->_idx = iter->_n_idx; //advance to next item if set
-      iter->_ptr = iter->_n_ptr;
-      if (iter->_ptr == NULL) {
-          iter->_idx = 0; //start of iteration
-          iter->_ptr = queue->data;
-      }
+      iter->_off = iter->_n_off;
       if (iter->_idx >= queue->index_write) {
           return NULL; //end of iteration
       }
       //could be out of bounds
       //but we check idx first on next use
-      iter->_n_ptr = iter->_ptr + queue->index[iter->_idx];
+      iter->_n_off = iter->_off + queue->index[iter->_idx];
       iter->_n_idx = iter->_idx + 1;
 
       size_t idx = iter->_idx;
-      uint8_t *ptr = iter->_ptr;
 
-       
       if (queue->metadata[idx] & ANB_S_META_MASK) {
           continue; //item is deleted, skip
       }
@@ -139,7 +139,7 @@ uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t
       if (out_size) {
           *out_size = aligned_size - (queue->metadata[idx] & ANB_S_PAD_MASK);
       }
-      return ptr;
+      return queue->data + iter->_off;
     }
 }
 
@@ -162,6 +162,7 @@ int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
     if (queue->count == 0) {
         queue->write_pos = 0;
         queue->index_write = 0;
+        queue->version++;
     }
 
     return 0;
@@ -177,7 +178,7 @@ int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
     uint8_t *ptr;
     if (iter) {
         idx = iter->_idx;
-        ptr = iter->_ptr;
+        ptr = queue->data + iter->_off;
     } else {
         ANB_SlabIter_t temp_iter = {0};
         ptr = ANB_slab_peek_item_iter(queue, &temp_iter, NULL);
@@ -190,4 +191,10 @@ int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
     while (len--) *p++ = 0;
 
     return ANB_slab_pop_item(queue, iter);
+}
+
+int ANB_slab_iter_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
+    assert(queue != NULL);
+    assert(iter != NULL);
+    return iter->_version == queue->version;
 }
