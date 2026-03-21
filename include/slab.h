@@ -136,6 +136,17 @@ int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter);
  * @brief Check whether an iterator is still valid for the current buffer generation.
  * @param queue The queue. Must not be NULL.
  * @param iter The iterator to check. Must not be NULL.
- * @return 1 if valid (version matches), 0 if stale (buffer has been reset since iterator was created).
+ * @return 1 if the iterator points to a live item (version matches, index in bounds,
+ *         item not deleted), 0 otherwise.
  */
-int ANB_slab_iter_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter);
+int ANB_slab_item_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter);
+
+/**
+ * @ingroup ANB_Slab
+ * @brief Return the item the iterator currently points at without advancing.
+ * @param queue The queue. Must not be NULL.
+ * @param iter The iterator. Must not be NULL.
+ * @param out_size If non-NULL, receives the item's original size in bytes.
+ * @return Pointer to the item's data, or NULL if the iterator is invalid.
+ */
+uint8_t *ANB_slab_peek_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t *out_size);

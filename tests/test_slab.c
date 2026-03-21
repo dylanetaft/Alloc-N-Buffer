@@ -274,23 +274,78 @@ void test_iter_valid(void) {
     ANB_slab_peek_item_iter(q, &iter, &sz);
 
     /* Iterator is valid while items exist */
-    TEST_ASSERT_EQUAL_INT(1, ANB_slab_iter_valid(q, &iter));
+    TEST_ASSERT_EQUAL_INT(1, ANB_slab_item_valid(q, &iter));
 
     /* Pop all items — triggers reset and version increment */
     ANB_slab_pop_item(q, NULL);
     ANB_slab_pop_item(q, NULL);
 
     /* Old iterator is now stale */
-    TEST_ASSERT_EQUAL_INT(0, ANB_slab_iter_valid(q, &iter));
+    TEST_ASSERT_EQUAL_INT(0, ANB_slab_item_valid(q, &iter));
 
     /* Push new data, create fresh iterator — valid again */
     ANB_slab_push_item(q, (const uint8_t *)"ccc", 4);
     ANB_SlabIter_t iter2 = {0};
     ANB_slab_peek_item_iter(q, &iter2, &sz);
-    TEST_ASSERT_EQUAL_INT(1, ANB_slab_iter_valid(q, &iter2));
+    TEST_ASSERT_EQUAL_INT(1, ANB_slab_item_valid(q, &iter2));
 
     /* Original iterator is still stale */
-    TEST_ASSERT_EQUAL_INT(0, ANB_slab_iter_valid(q, &iter));
+    TEST_ASSERT_EQUAL_INT(0, ANB_slab_item_valid(q, &iter));
+
+    /* Zero-init iterator on empty queue is not valid */
+    ANB_Slab_t *q2 = ANB_slab_create(256);
+    ANB_SlabIter_t iter3 = {0};
+    TEST_ASSERT_EQUAL_INT(0, ANB_slab_item_valid(q2, &iter3));
+    ANB_slab_destroy(q2);
+
+    /* Iterator pointing at deleted item is not valid */
+    ANB_Slab_t *q3 = ANB_slab_create(256);
+    ANB_slab_push_item(q3, (const uint8_t *)"xxx", 4);
+    ANB_slab_push_item(q3, (const uint8_t *)"yyy", 4);
+    ANB_SlabIter_t iter4 = {0};
+    ANB_slab_peek_item_iter(q3, &iter4, &sz);
+    TEST_ASSERT_EQUAL_INT(1, ANB_slab_item_valid(q3, &iter4));
+    ANB_slab_pop_item(q3, &iter4);
+    TEST_ASSERT_EQUAL_INT(0, ANB_slab_item_valid(q3, &iter4));
+    ANB_slab_destroy(q3);
+
+    ANB_slab_destroy(q);
+}
+
+/* ------------------------------------------------------------------ */
+/* 9. Peek item without advancing                                     */
+/* ------------------------------------------------------------------ */
+void test_peek_item(void) {
+    ANB_Slab_t *q = ANB_slab_create(256);
+
+    ANB_slab_push_item(q, (const uint8_t *)"hello", 6);
+    ANB_slab_push_item(q, (const uint8_t *)"world", 6);
+
+    ANB_SlabIter_t iter = {0};
+    size_t sz;
+    uint8_t *data = ANB_slab_peek_item_iter(q, &iter, &sz);
+    TEST_ASSERT_EQUAL_STRING("hello", (const char *)data);
+
+    /* peek_item returns same item without advancing */
+    data = ANB_slab_peek_item(q, &iter, &sz);
+    TEST_ASSERT_NOT_NULL(data);
+    TEST_ASSERT_EQUAL_STRING("hello", (const char *)data);
+    TEST_ASSERT_EQUAL_size_t(6, sz);
+
+    /* calling peek_item again still returns the same item */
+    data = ANB_slab_peek_item(q, &iter, &sz);
+    TEST_ASSERT_NOT_NULL(data);
+    TEST_ASSERT_EQUAL_STRING("hello", (const char *)data);
+
+    /* advance, then peek_item returns the next one */
+    ANB_slab_peek_item_iter(q, &iter, &sz);
+    data = ANB_slab_peek_item(q, &iter, &sz);
+    TEST_ASSERT_NOT_NULL(data);
+    TEST_ASSERT_EQUAL_STRING("world", (const char *)data);
+
+    /* pop the item, peek_item returns NULL (deleted) */
+    ANB_slab_pop_item(q, &iter);
+    TEST_ASSERT_NULL(ANB_slab_peek_item(q, &iter, NULL));
 
     ANB_slab_destroy(q);
 }
@@ -306,5 +361,6 @@ int main(void) {
     RUN_TEST(test_size);
     RUN_TEST(test_reset_on_empty);
     RUN_TEST(test_iter_valid);
+    RUN_TEST(test_peek_item);
     return UNITY_END();
 }

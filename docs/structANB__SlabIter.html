@@ -101,17 +101,19 @@ $(function(){initNavTree('structANB__SlabIter.html','',''); });
 Data Fields</h2></td></tr>
 <tr class="memitem:a5c403412ec4d1ae3bc79e74bd90e3eff" id="r_a5c403412ec4d1ae3bc79e74bd90e3eff"><td class="memItemLeft" align="right" valign="top"><a id="a5c403412ec4d1ae3bc79e74bd90e3eff" name="a5c403412ec4d1ae3bc79e74bd90e3eff"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_idx</b></td></tr>
-<tr class="memitem:a27de1428b173a5a7ec4e3cd1c49887ed" id="r_a27de1428b173a5a7ec4e3cd1c49887ed"><td class="memItemLeft" align="right" valign="top"><a id="a27de1428b173a5a7ec4e3cd1c49887ed" name="a27de1428b173a5a7ec4e3cd1c49887ed"></a>
-uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><b>_ptr</b></td></tr>
+<tr class="memitem:a3f43ba1b9c5734f115ac7e315ee1e4fa" id="r_a3f43ba1b9c5734f115ac7e315ee1e4fa"><td class="memItemLeft" align="right" valign="top"><a id="a3f43ba1b9c5734f115ac7e315ee1e4fa" name="a3f43ba1b9c5734f115ac7e315ee1e4fa"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_off</b></td></tr>
 <tr class="memitem:af68562a2f13fe5fb22d986cfc3e232f4" id="r_af68562a2f13fe5fb22d986cfc3e232f4"><td class="memItemLeft" align="right" valign="top"><a id="af68562a2f13fe5fb22d986cfc3e232f4" name="af68562a2f13fe5fb22d986cfc3e232f4"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_n_idx</b></td></tr>
-<tr class="memitem:ac60329dd62a20a54ca77833295f44ef1" id="r_ac60329dd62a20a54ca77833295f44ef1"><td class="memItemLeft" align="right" valign="top"><a id="ac60329dd62a20a54ca77833295f44ef1" name="ac60329dd62a20a54ca77833295f44ef1"></a>
-uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><b>_n_ptr</b></td></tr>
+<tr class="memitem:a0283b47aeca4e0b215edd8b43bac9b15" id="r_a0283b47aeca4e0b215edd8b43bac9b15"><td class="memItemLeft" align="right" valign="top"><a id="a0283b47aeca4e0b215edd8b43bac9b15" name="a0283b47aeca4e0b215edd8b43bac9b15"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>_n_off</b></td></tr>
+<tr class="memitem:a9cf26cc518b24a2a265a8585341898ee" id="r_a9cf26cc518b24a2a265a8585341898ee"><td class="memItemLeft" align="right" valign="top"><a id="a9cf26cc518b24a2a265a8585341898ee" name="a9cf26cc518b24a2a265a8585341898ee"></a>
+uint64_t&#160;</td><td class="memItemRight" valign="bottom"><b>_version</b></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Iterator state for O(1)-per-step item traversal. Use peek_item_iter if you need to iterate through all items in order without random access. </p>
 <p>Initialize to zero before first use: <a class="el" href="group__ANB__Slab.html#ga43163b2163998a535fa7bd8eb5cb4f00" title="Iterator state for O(1)-per-step item traversal. Use peek_item_iter if you need to iterate through al...">ANB_SlabIter_t</a> iter = {0};</p>
-<p>Pushing while an iterator is live is undefined behavior (realloc may invalidate pointers). Popping is safe. </p>
+<p>Popping while iterating is safe — deleted items are skipped. Pushing while iterating is safe for the iterator state (offsets survive realloc), but any data pointer previously returned by peek_item_iter may be invalidated by a push that grows the buffer. </p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>include/<a class="el" href="slab_8h_source.html">slab.h</a></li>
 </ul>

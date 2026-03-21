@@ -7,6 +7,8 @@ var group__ANB__Slab =
     [ "ANB_slab_create", "group__ANB__Slab.html#gac2857725c6782de709fa6d310e5a12c1", null ],
     [ "ANB_slab_destroy", "group__ANB__Slab.html#gad84beecc68ba1e03389af8335d02c41f", null ],
     [ "ANB_slab_item_count", "group__ANB__Slab.html#gabd279c6ee0a299c2e54e0f23c9e41532", null ],
+    [ "ANB_slab_item_valid", "group__ANB__Slab.html#ga20206d35a3e6384eb02b3afdeca05aae", null ],
+    [ "ANB_slab_peek_item", "group__ANB__Slab.html#ga51ee2ebed76cdc2aca7c74bb368c8e63", null ],
     [ "ANB_slab_peek_item_iter", "group__ANB__Slab.html#ga77ee357b0dafbbe0a365de79a5f4df0a", null ],
     [ "ANB_slab_pop_item", "group__ANB__Slab.html#ga9c777f05bf2e80c26e79fc57b3a58fd6", null ],
     [ "ANB_slab_push_item", "group__ANB__Slab.html#ga1b013996a5adc6af27aa3e43c919f9ce", null ],

@@ -193,8 +193,23 @@ int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
     return ANB_slab_pop_item(queue, iter);
 }
 
-int ANB_slab_iter_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
+int ANB_slab_item_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
     assert(queue != NULL);
     assert(iter != NULL);
-    return iter->_version == queue->version;
+    if (iter->_version != queue->version) return 0;
+    if (iter->_idx >= queue->index_write) return 0;
+    if (queue->metadata[iter->_idx] & ANB_S_META_MASK) return 0;
+    return 1;
+}
+
+uint8_t *ANB_slab_peek_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t *out_size) {
+    assert(queue != NULL);
+    assert(iter != NULL);
+    if (!ANB_slab_item_valid(queue, iter)) return NULL;
+
+    if (out_size) {
+        size_t aligned_size = queue->index[iter->_idx];
+        *out_size = aligned_size - (queue->metadata[iter->_idx] & ANB_S_PAD_MASK);
+    }
+    return queue->data + iter->_off;
 }

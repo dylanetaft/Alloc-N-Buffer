@@ -127,6 +127,10 @@ Functions</h2></td></tr>
 <tr class="memdesc:ga9c777f05bf2e80c26e79fc57b3a58fd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop the first item from the queue.  <br /></td></tr>
 <tr class="memitem:gad7bd595ecc8818a305b1375d0b6c51fd" id="r_gad7bd595ecc8818a305b1375d0b6c51fd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gad7bd595ecc8818a305b1375d0b6c51fd">ANB_slab_securepop_item</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, <a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *iter)</td></tr>
 <tr class="memdesc:gad7bd595ecc8818a305b1375d0b6c51fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pop an item and securely zero its data to prevent sensitive data from lingering in memory.  <br /></td></tr>
+<tr class="memitem:ga20206d35a3e6384eb02b3afdeca05aae" id="r_ga20206d35a3e6384eb02b3afdeca05aae"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga20206d35a3e6384eb02b3afdeca05aae">ANB_slab_item_valid</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, <a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *iter)</td></tr>
+<tr class="memdesc:ga20206d35a3e6384eb02b3afdeca05aae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check whether an iterator is still valid for the current buffer generation.  <br /></td></tr>
+<tr class="memitem:ga51ee2ebed76cdc2aca7c74bb368c8e63" id="r_ga51ee2ebed76cdc2aca7c74bb368c8e63"><td class="memItemLeft" align="right" valign="top">uint8_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga51ee2ebed76cdc2aca7c74bb368c8e63">ANB_slab_peek_item</a> (<a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *queue, <a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *iter, size_t *out_size)</td></tr>
+<tr class="memdesc:ga51ee2ebed76cdc2aca7c74bb368c8e63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the item the iterator currently points at without advancing.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <p>Slab allocator / buffer queue with item tracking. </p>
@@ -162,7 +166,7 @@ Functions</h2></td></tr>
 
 <p>Iterator state for O(1)-per-step item traversal. Use peek_item_iter if you need to iterate through all items in order without random access. </p>
 <p>Initialize to zero before first use: <a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00" title="Iterator state for O(1)-per-step item traversal. Use peek_item_iter if you need to iterate through al...">ANB_SlabIter_t</a> iter = {0};</p>
-<p>Pushing while an iterator is live is undefined behavior (realloc may invalidate pointers). Popping is safe. </p>
+<p>Popping while iterating is safe — deleted items are skipped. Pushing while iterating is safe for the iterator state (offsets survive realloc), but any data pointer previously returned by peek_item_iter may be invalidated by a push that grows the buffer. </p>
 
 </div>
 </div>
@@ -196,7 +200,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to the allocated region (at least data_len bytes, aligned to max_align_t). The caller is responsible for filling the memory. </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The item is immediately tracked (counted, indexed). Buffer and item index grow automatically if needed. Padding bytes are uninitialized. </dd></dl>
-<dl class="section warning"><dt>Warning</dt><dd>Pushing or allocating while an iterator is live is undefined behavior (realloc may invalidate pointers). </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Any data pointer previously returned by peek_item_iter may be invalidated by a push/alloc that grows the buffer. </dd></dl>
 
 </div>
 </div>
@@ -274,6 +278,74 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Number of items available (each push counts as one item). </dd></dl>
+
+</div>
+</div>
+<a id="ga20206d35a3e6384eb02b3afdeca05aae" name="ga20206d35a3e6384eb02b3afdeca05aae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga20206d35a3e6384eb02b3afdeca05aae">&#9670;&#160;</a></span>ANB_slab_item_valid()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ANB_slab_item_valid </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *</td>          <td class="paramname"><span class="paramname"><em>queue</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *</td>          <td class="paramname"><span class="paramname"><em>iter</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check whether an iterator is still valid for the current buffer generation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">queue</td><td>The queue. Must not be NULL. </td></tr>
+    <tr><td class="paramname">iter</td><td>The iterator to check. Must not be NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>1 if the iterator points to a live item (version matches, index in bounds, item not deleted), 0 otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="ga51ee2ebed76cdc2aca7c74bb368c8e63" name="ga51ee2ebed76cdc2aca7c74bb368c8e63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga51ee2ebed76cdc2aca7c74bb368c8e63">&#9670;&#160;</a></span>ANB_slab_peek_item()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint8_t * ANB_slab_peek_item </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga6d215eda629f858265a72c875a627458">ANB_Slab_t</a> *</td>          <td class="paramname"><span class="paramname"><em>queue</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="#ga43163b2163998a535fa7bd8eb5cb4f00">ANB_SlabIter_t</a> *</td>          <td class="paramname"><span class="paramname"><em>iter</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *</td>          <td class="paramname"><span class="paramname"><em>out_size</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the item the iterator currently points at without advancing. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">queue</td><td>The queue. Must not be NULL. </td></tr>
+    <tr><td class="paramname">iter</td><td>The iterator. Must not be NULL. </td></tr>
+    <tr><td class="paramname">out_size</td><td>If non-NULL, receives the item's original size in bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to the item's data, or NULL if the iterator is invalid. </dd></dl>
 
 </div>
 </div>
