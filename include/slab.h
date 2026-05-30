@@ -113,7 +113,7 @@ uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t
 
 /**
  * @ingroup ANB_Slab
- * @brief Pop the first item from the queue.
+ * @brief Pop an item at the iterator position from the queue, or the first.
  * @param queue The queue. Must not be NULL.
  * @param iter Optional iterator state to advance in sync with the popped item. If non-NULL, iter must be currently at the popped item (i.e. the next peek_item_iter call would return the popped item). If iter is NULL, no iterator is advanced.
  * @return 0 if success, -1 if fail.
