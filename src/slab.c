@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include "slab.h"
-#include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,19 +27,19 @@ struct ANB_Slab {
 
 
 ANB_Slab_t* ANB_slab_create(size_t initial_size) {
-    assert(initial_size > 0);
+    if (initial_size == 0) abort();
     ANB_Slab_t* queue = (ANB_Slab_t*)calloc(1, sizeof(ANB_Slab_t));
-    assert(queue != NULL);
+    if (!queue) abort();
 
     queue->data = (uint8_t *)malloc(initial_size);
-    assert(queue->data != NULL);
+    if (!queue->data) abort();
 
     queue->size = initial_size;
 
     queue->index = (size_t *)calloc(ANB_S_INITIAL_INDEX_CAP, sizeof(size_t));
-    assert(queue->index != NULL);
+    if (!queue->index) abort();
     queue->metadata = (uint8_t *)calloc(ANB_S_INITIAL_INDEX_CAP, sizeof(uint8_t));
-    assert(queue->metadata != NULL);
+    if (!queue->metadata) abort();
     queue->index_cap = ANB_S_INITIAL_INDEX_CAP;
 
     return queue;
@@ -56,7 +55,7 @@ void ANB_slab_destroy(ANB_Slab_t* queue) {
 }
 
 uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len) {
-    assert(queue != NULL);
+    if (!queue) abort();
 
     size_t aligned_len = ANB_S_ALIGN_UP(data_len);
 
@@ -64,11 +63,11 @@ uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len) {
     if (queue->write_pos + aligned_len > queue->size) {
         size_t new_size = queue->size;
         while (new_size < queue->write_pos + aligned_len) {
-          assert(new_size < SIZE_MAX / 2); // Prevent overflow
+          if (new_size >= SIZE_MAX / 2) abort();
           new_size *= 2;
         }
         queue->data = (uint8_t *)realloc(queue->data, new_size);
-        assert(queue->data != NULL);
+        if (!queue->data) abort();
         queue->size = new_size;
     }
 
@@ -79,9 +78,9 @@ uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len) {
     if (queue->index_write >= queue->index_cap) {
         size_t new_cap = queue->index_cap * 2;
         queue->index = (size_t *)realloc(queue->index, new_cap * sizeof(size_t));
-        assert(queue->index != NULL);
+        if (!queue->index) abort();
         queue->metadata = (uint8_t *)realloc(queue->metadata, new_cap * sizeof(uint8_t));
-        assert(queue->metadata != NULL);
+        if (!queue->metadata) abort();
         memset(queue->metadata + queue->index_cap, 0, (new_cap - queue->index_cap) * sizeof(uint8_t));
         queue->index_cap = new_cap;
     }
@@ -95,24 +94,24 @@ uint8_t *ANB_slab_alloc_item(ANB_Slab_t* queue, size_t data_len) {
 }
 
 void ANB_slab_push_item(ANB_Slab_t* queue, const uint8_t* data, size_t data_len) {
-    assert(data != NULL);
+    if (!data) abort();
     uint8_t *ptr = ANB_slab_alloc_item(queue, data_len);
     memcpy(ptr, data, data_len);
 }
 
 size_t ANB_slab_size(ANB_Slab_t* queue) {
-    assert(queue != NULL);
+    if (!queue) abort();
     return queue->write_pos;
 }
 
 size_t ANB_slab_item_count(ANB_Slab_t* queue) {
-    assert(queue != NULL);
+    if (!queue) abort();
     return queue->count;
 }
 
 uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t *out_size) {
-    assert(queue != NULL);
-    assert(iter != NULL);
+    if (!queue) abort();
+    if (!iter) abort();
 
     if (iter->_idx == 0 && iter->_n_off == 0) {
         iter->_version = queue->version;
@@ -144,7 +143,7 @@ uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t
 }
 
 int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
-    assert(queue != NULL);
+    if (!queue) abort();
     if (queue->count == 0) {
         return -1;
     }
@@ -169,7 +168,7 @@ int ANB_slab_pop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
 }
 
 int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
-    assert(queue != NULL);
+    if (!queue) abort();
     if (queue->count == 0) {
         return -1;
     }
@@ -194,8 +193,8 @@ int ANB_slab_securepop_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
 }
 
 int ANB_slab_item_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
-    assert(queue != NULL);
-    assert(iter != NULL);
+    if (!queue) abort();
+    if (!iter) abort();
     if (iter->_version != queue->version) return 0;
     if (iter->_idx >= queue->index_write) return 0;
     if (queue->metadata[iter->_idx] & ANB_S_META_MASK) return 0;
@@ -203,8 +202,8 @@ int ANB_slab_item_valid(ANB_Slab_t* queue, ANB_SlabIter_t *iter) {
 }
 
 uint8_t *ANB_slab_peek_item(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t *out_size) {
-    assert(queue != NULL);
-    assert(iter != NULL);
+    if (!queue) abort();
+    if (!iter) abort();
     if (!ANB_slab_item_valid(queue, iter)) return NULL;
 
     if (out_size) {

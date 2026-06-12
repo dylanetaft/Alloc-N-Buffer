@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['quick_20start_0',['Quick start',['../md_Alloc-N-Buffer.html#autotoc_md2',1,'']]]
+  ['n_20buffer_0',['Alloc-N-Buffer',['../md_Alloc-N-Buffer.html',1,'']]]
 ];

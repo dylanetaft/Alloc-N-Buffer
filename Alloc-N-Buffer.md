@@ -89,4 +89,58 @@ As bytes are aligned, you may directly cast the returned pointer to a struct typ
 - When all items are deleted, internal positions reset to offset 0, reusing the buffer without reallocation.
 - Items are deleted by marking them in per-item metadata; the iterator skips deleted items automatically.
 - Popping while iterating is safe. Pushing while iterating is undefined behavior (realloc may invalidate pointers).
-- Allocation failures abort via `assert()`.
+- Allocation failures abort via `abort()`.
+
+---
+
+## ANB_Blob — Simple contiguous byte buffer
+
+`ANB_Blob` is a raw, externally managed byte buffer. Unlike `ANB_Slab`, it has no item tracking, alignment padding, or queue semantics. Think of it as a managed `uint8_t*` that you control completely.
+
+### Quick start
+
+```c
+#include "blob.h"
+
+ANB_Blob_t *b = ANB_blob_create(1024);
+
+// Write directly into the buffer
+uint8_t *data = ANB_blob_data(b);
+memcpy(data, "hello", 6);
+
+// Grow by adding bytes
+ANB_blob_alloc(b, 512);   // capacity is now 1536
+
+// Or double the capacity
+ANB_blob_alloc(b, 0);     // capacity is now 3072
+
+// Set exact capacity (shrink or grow)
+ANB_blob_realloc(b, 2048);
+
+// Zero everything
+ANB_blob_clear(b);
+
+printf("capacity: %zu\n", ANB_blob_capacity(b));
+
+ANB_blob_destroy(b);
+```
+
+### API
+
+| Function | Purpose |
+|---|---|
+| `ANB_blob_create(size)` | Allocate blob with initial capacity (aborts on failure) |
+| `ANB_blob_destroy(b)` | Free memory (NULL-safe) |
+| `ANB_blob_data(b)` | Return `uint8_t*` to internal buffer |
+| `ANB_blob_capacity(b)` | Return total allocated bytes |
+| `ANB_blob_alloc(b, bytes)` | Grow buffer; `bytes == 0` doubles capacity |
+| `ANB_blob_realloc(b, size)` | Set exact capacity (shrink or grow) |
+| `ANB_blob_clear(b)` | `memset` entire buffer to 0 |
+
+### Key behaviors
+
+- **Externally managed** — no concept of "used" bytes; you track offsets yourself.
+- **`ANB_blob_alloc(b, bytes)`** adds `bytes` to current capacity. Passing `0` doubles.
+- **`ANB_blob_realloc(b, size)`** sets capacity to exactly `size`, reallocating the buffer. Shrinking may lose data beyond the new size.
+- **Data pointers are invalidated** by `ANB_blob_alloc` and `ANB_blob_realloc` (realloc may move the buffer).
+- **Allocation failures** abort via `abort()`.

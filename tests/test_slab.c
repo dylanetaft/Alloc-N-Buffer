@@ -351,6 +351,18 @@ void test_peek_item(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Blob test declarations                                             */
+/* ------------------------------------------------------------------ */
+void test_create_destroy(void);
+void test_data_usable(void);
+void test_alloc_explicit(void);
+void test_alloc_double(void);
+void test_realloc_exact(void);
+void test_data_after_alloc(void);
+void test_clear(void);
+void test_clear_after_alloc(void);
+
+/* ------------------------------------------------------------------ */
 int main(void) {
     UNITY_BEGIN();
     RUN_TEST(test_push_iterate_pop_strings);
@@ -362,5 +374,13 @@ int main(void) {
     RUN_TEST(test_reset_on_empty);
     RUN_TEST(test_iter_valid);
     RUN_TEST(test_peek_item);
+    RUN_TEST(test_create_destroy);
+    RUN_TEST(test_data_usable);
+    RUN_TEST(test_alloc_explicit);
+    RUN_TEST(test_alloc_double);
+    RUN_TEST(test_realloc_exact);
+    RUN_TEST(test_data_after_alloc);
+    RUN_TEST(test_clear);
+    RUN_TEST(test_clear_after_alloc);
     return UNITY_END();
 }

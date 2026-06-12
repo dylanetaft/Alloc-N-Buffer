@@ -100,7 +100,7 @@ if(BUILD_TESTS)
     )
     FetchContent_MakeAvailable(unity)
 
-    add_executable(anb_tests tests/test_slab.c)
+    add_executable(anb_tests tests/test_slab.c tests/test_blob.c)
     target_link_libraries(anb_tests unity allocnbuffer_static)
 
     add_test(NAME anb_test COMMAND anb_tests)

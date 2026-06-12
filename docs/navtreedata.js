@@ -30,7 +30,12 @@ var NAVTREE =
       [ "Quick start", "md_Alloc-N-Buffer.html#autotoc_md2", null ],
       [ "Building", "md_Alloc-N-Buffer.html#autotoc_md3", null ],
       [ "Alignment and size tracking", "md_Alloc-N-Buffer.html#autotoc_md4", null ],
-      [ "Key behaviors", "md_Alloc-N-Buffer.html#autotoc_md5", null ]
+      [ "Key behaviors", "md_Alloc-N-Buffer.html#autotoc_md5", null ],
+      [ "ANB_Blob — Simple contiguous byte buffer", "md_Alloc-N-Buffer.html#autotoc_md7", [
+        [ "Quick start", "md_Alloc-N-Buffer.html#autotoc_md8", null ],
+        [ "API", "md_Alloc-N-Buffer.html#autotoc_md9", null ],
+        [ "Key behaviors", "md_Alloc-N-Buffer.html#autotoc_md10", null ]
+      ] ]
     ] ],
     [ "Topics", "topics.html", "topics" ],
     [ "Data Structures", "annotated.html", [

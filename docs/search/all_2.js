@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['does_0',['What it does',['../md_Alloc-N-Buffer.html#autotoc_md1',1,'']]]
+  ['contiguous_20byte_20buffer_0',['ANB_Blob — Simple contiguous byte buffer',['../md_Alloc-N-Buffer.html#autotoc_md7',1,'']]]
 ];
