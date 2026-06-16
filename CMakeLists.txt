@@ -17,7 +17,7 @@ option(BUILD_SHARED "Build shared library" OFF)
 add_library(${PROJECT_NAME}_obj OBJECT ${SOURCE_FILES})
 target_include_directories(${PROJECT_NAME}_obj PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/allocnbuffer>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
@@ -28,7 +28,7 @@ if(BUILD_STATIC)
     add_library(${PROJECT_NAME}_static STATIC $<TARGET_OBJECTS:${PROJECT_NAME}_obj>)
     target_include_directories(${PROJECT_NAME}_static PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/allocnbuffer>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     set_target_properties(${PROJECT_NAME}_static PROPERTIES
         OUTPUT_NAME ${PROJECT_NAME}
@@ -43,7 +43,7 @@ if(BUILD_SHARED)
     add_library(${PROJECT_NAME}_shared SHARED $<TARGET_OBJECTS:${PROJECT_NAME}_obj>)
     target_include_directories(${PROJECT_NAME}_shared PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/allocnbuffer>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     )
     set_target_properties(${PROJECT_NAME}_shared PROPERTIES
         OUTPUT_NAME ${PROJECT_NAME}
