@@ -75,7 +75,34 @@ void ANB_blob_realloc(ANB_Blob_t* blob, size_t new_capacity);
 
 /**
  * @ingroup ANB_Blob
- * @brief Zero the entire blob buffer.
+ * @brief Zero the entire blob buffer and reset the write position to 0.
  * @param blob The blob. Must not be NULL.
  */
 void ANB_blob_clear(ANB_Blob_t* blob);
+
+/**
+ * @ingroup ANB_Blob
+ * @brief Push bytes to the blob at the current write position.
+ * @param blob The blob. Must not be NULL.
+ * @param bytes Pointer to data to copy.
+ * @param len Number of bytes to copy.
+ * @note Auto-grows the buffer (doubling) if needed. Aborts on allocation failure.
+ * @warning Any pointer previously returned by ANB_blob_data may be invalidated.
+ */
+void ANB_blob_push(ANB_Blob_t* blob, const uint8_t* bytes, size_t len);
+
+/**
+ * @ingroup ANB_Blob
+ * @brief Get the current write position (number of bytes pushed).
+ * @param blob The blob. Must not be NULL.
+ * @return Number of bytes written via ANB_blob_push since last clear/reset.
+ */
+size_t ANB_blob_data_len(ANB_Blob_t* blob);
+
+/**
+ * @ingroup ANB_Blob
+ * @brief Reset the write position to 0 without clearing buffer contents.
+ * @param blob The blob. Must not be NULL.
+ * @note Subsequent pushes will overwrite existing data from the beginning.
+ */
+void ANB_blob_reset(ANB_Blob_t* blob);

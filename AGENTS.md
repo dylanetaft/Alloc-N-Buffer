@@ -78,13 +78,17 @@ Data is stored in a contiguous buffer with a contiguous `size_t[]` index, so cac
 | `ANB_blob_destroy(b)` | Free memory (NULL-safe) |
 | `ANB_blob_data(b)` | Return `uint8_t*` to internal buffer |
 | `ANB_blob_capacity(b)` | Return total allocated bytes |
+| `ANB_blob_data_len(b)` | Return current write position (bytes pushed) |
+| `ANB_blob_push(b, bytes, len)` | Append bytes at write position, auto-grows (doubling) if needed |
 | `ANB_blob_alloc(b, bytes)` | Grow buffer; `bytes == 0` doubles capacity |
 | `ANB_blob_realloc(b, size)` | Set exact capacity (shrink or grow) |
-| `ANB_blob_clear(b)` | `memset` entire buffer to 0 |
+| `ANB_blob_clear(b)` | `memset` entire buffer to 0, reset write position to 0 |
+| `ANB_blob_reset(b)` | Reset write position to 0 without clearing buffer contents |
 
 ### Key behaviors
 
 - No item tracking, no alignment padding, no queue semantics.
+- Internal position counter tracks bytes written via `ANB_blob_push`.
 - `ANB_blob_alloc(b, bytes)` adds `bytes` to current capacity. Passing `0` doubles.
 - `ANB_blob_realloc(b, size)` sets capacity to exactly `size`.
 - Data pointers are invalidated by `ANB_blob_alloc` and `ANB_blob_realloc`.

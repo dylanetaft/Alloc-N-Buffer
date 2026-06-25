@@ -92,7 +92,10 @@ $(function(){initNavTree('md_Alloc-N-Buffer.html','',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p><a class="anchor" id="autotoc_md0"></a></p>
-<p>A C library providing <span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span> &ndash; a slab allocator that doubles as a buffer queue with item tracking.</p>
+<p>A C library providing two buffer types:</p><ul>
+<li><span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span> — a slab allocator that doubles as a buffer queue with item tracking.</li>
+<li><span class="tt"><a class="el" href="structANB__Blob.html">ANB_Blob</a></span> — a simple contiguous byte buffer with position tracking.</li>
+</ul>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md1"></a>
 What it does</h1>
 <p><span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span> is a growable, contiguous byte buffer with internal tracking of each push as indexed offsets to the item data. It supports pushing arbitrary byte arrays, and iterating/deleting them. The internal buffer grows as needed, and when all items are deleted, it resets to offset 0 for reuse.</p>
@@ -169,16 +172,33 @@ Key behaviors</h1>
 <hr  />
 <h1 class="doxsection"><a class="anchor" id="autotoc_md7"></a>
 ANB_Blob — Simple contiguous byte buffer</h1>
-<p><span class="tt"><a class="el" href="structANB__Blob.html">ANB_Blob</a></span> is a raw, externally managed byte buffer. Unlike <span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span>, it has no item tracking, alignment padding, or queue semantics. Think of it as a managed <span class="tt">uint8_t*</span> that you control completely.</p>
+<p><span class="tt"><a class="el" href="structANB__Blob.html">ANB_Blob</a></span> is a raw byte buffer with an internal write position. Unlike <span class="tt"><a class="el" href="structANB__Slab.html">ANB_Slab</a></span>, it has no item tracking, alignment padding, or queue semantics. Think of it as a managed <span class="tt">uint8_t*</span> that you can either control directly or use as a byte buffer with push/position tracking.</p>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md8"></a>
 Quick start</h2>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="blob_8h.html">blob.h</a>&quot;</span></div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_typedef" href="group__ANB__Blob.html#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *b = <a class="code hl_function" href="group__ANB__Blob.html#gabd335048dac9ff2aa456d6a6771e7d2e">ANB_blob_create</a>(1024);</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// Write directly into the buffer</span></div>
+<div class="line"><span class="comment">// Push bytes (auto-tracks position, auto-grows if needed)</span></div>
+<div class="line"><a class="code hl_function" href="group__ANB__Blob.html#gaa72e1e310bb17f8f62ab607680fc5062">ANB_blob_push</a>(b, (<span class="keyword">const</span> uint8_t *)<span class="stringliteral">&quot;hello&quot;</span>, 6);</div>
+<div class="line"><a class="code hl_function" href="group__ANB__Blob.html#gaa72e1e310bb17f8f62ab607680fc5062">ANB_blob_push</a>(b, (<span class="keyword">const</span> uint8_t *)<span class="stringliteral">&quot;world&quot;</span>, 6);</div>
+<div class="line"> </div>
+<div class="line">printf(<span class="stringliteral">&quot;bytes written: %zu\n&quot;</span>, <a class="code hl_function" href="group__ANB__Blob.html#gad8bbde195fbd684bf4476567eba182c6">ANB_blob_data_len</a>(b));  <span class="comment">// 12</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Read the data</span></div>
 <div class="line">uint8_t *data = <a class="code hl_function" href="group__ANB__Blob.html#gaa8bb617fd7a912c842c2e754614dbd46">ANB_blob_data</a>(b);</div>
-<div class="line">memcpy(data, <span class="stringliteral">&quot;hello&quot;</span>, 6);</div>
+<div class="line">printf(<span class="stringliteral">&quot;%.*s\n&quot;</span>, (<span class="keywordtype">int</span>)<a class="code hl_function" href="group__ANB__Blob.html#gad8bbde195fbd684bf4476567eba182c6">ANB_blob_data_len</a>(b), data);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Reset position to 0 (data remains in buffer)</span></div>
+<div class="line"><a class="code hl_function" href="group__ANB__Blob.html#gab114589a3bb6b15d716e3ed13430df12">ANB_blob_reset</a>(b);</div>
+<div class="line">printf(<span class="stringliteral">&quot;after reset: %zu\n&quot;</span>, <a class="code hl_function" href="group__ANB__Blob.html#gad8bbde195fbd684bf4476567eba182c6">ANB_blob_data_len</a>(b));  <span class="comment">// 0</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Or clear everything (zeros buffer and resets position)</span></div>
+<div class="line"><a class="code hl_function" href="group__ANB__Blob.html#ga75bd2af1393fed7778560d53d0b65693">ANB_blob_clear</a>(b);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// You can also write directly into the buffer</span></div>
+<div class="line">data = <a class="code hl_function" href="group__ANB__Blob.html#gaa8bb617fd7a912c842c2e754614dbd46">ANB_blob_data</a>(b);</div>
+<div class="line">memcpy(data, <span class="stringliteral">&quot;manual write&quot;</span>, 13);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Grow by adding bytes</span></div>
 <div class="line"><a class="code hl_function" href="group__ANB__Blob.html#gacbdc8449ebd2d2382a305d1a8086df4c">ANB_blob_alloc</a>(b, 512);   <span class="comment">// capacity is now 1536</span></div>
@@ -189,21 +209,21 @@ Quick start</h2>
 <div class="line"><span class="comment">// Set exact capacity (shrink or grow)</span></div>
 <div class="line"><a class="code hl_function" href="group__ANB__Blob.html#gad48f9afd4d90744141d45867206763a1">ANB_blob_realloc</a>(b, 2048);</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">// Zero everything</span></div>
-<div class="line"><a class="code hl_function" href="group__ANB__Blob.html#ga75bd2af1393fed7778560d53d0b65693">ANB_blob_clear</a>(b);</div>
-<div class="line"> </div>
 <div class="line">printf(<span class="stringliteral">&quot;capacity: %zu\n&quot;</span>, <a class="code hl_function" href="group__ANB__Blob.html#ga541e8d39f214b4316e92b948df4816da">ANB_blob_capacity</a>(b));</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_function" href="group__ANB__Blob.html#gad944d5ea478987f68272c8df8a46238e">ANB_blob_destroy</a>(b);</div>
 <div class="ttc" id="ablob_8h_html"><div class="ttname"><a href="blob_8h.html">blob.h</a></div><div class="ttdoc">ANB_Blob public API — simple contiguous byte buffer.</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_ga541e8d39f214b4316e92b948df4816da"><div class="ttname"><a href="group__ANB__Blob.html#ga541e8d39f214b4316e92b948df4816da">ANB_blob_capacity</a></div><div class="ttdeci">size_t ANB_blob_capacity(ANB_Blob_t *blob)</div><div class="ttdoc">Get the total capacity of the blob buffer.</div><div class="ttdef"><b>Definition</b> blob.c:36</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_ga541e8d39f214b4316e92b948df4816da"><div class="ttname"><a href="group__ANB__Blob.html#ga541e8d39f214b4316e92b948df4816da">ANB_blob_capacity</a></div><div class="ttdeci">size_t ANB_blob_capacity(ANB_Blob_t *blob)</div><div class="ttdoc">Get the total capacity of the blob buffer.</div><div class="ttdef"><b>Definition</b> blob.c:37</div></div>
 <div class="ttc" id="agroup__ANB__Blob_html_ga62c274fcc5cdb7f30bdcca7f45caf15e"><div class="ttname"><a href="group__ANB__Blob.html#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a></div><div class="ttdeci">struct ANB_Blob ANB_Blob_t</div><div class="ttdoc">Opaque contiguous byte buffer with externally managed contents.</div><div class="ttdef"><b>Definition</b> blob.h:22</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_ga75bd2af1393fed7778560d53d0b65693"><div class="ttname"><a href="group__ANB__Blob.html#ga75bd2af1393fed7778560d53d0b65693">ANB_blob_clear</a></div><div class="ttdeci">void ANB_blob_clear(ANB_Blob_t *blob)</div><div class="ttdoc">Zero the entire blob buffer.</div><div class="ttdef"><b>Definition</b> blob.c:63</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_gaa8bb617fd7a912c842c2e754614dbd46"><div class="ttname"><a href="group__ANB__Blob.html#gaa8bb617fd7a912c842c2e754614dbd46">ANB_blob_data</a></div><div class="ttdeci">uint8_t * ANB_blob_data(ANB_Blob_t *blob)</div><div class="ttdoc">Get a pointer to the internal data buffer.</div><div class="ttdef"><b>Definition</b> blob.c:31</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_gabd335048dac9ff2aa456d6a6771e7d2e"><div class="ttname"><a href="group__ANB__Blob.html#gabd335048dac9ff2aa456d6a6771e7d2e">ANB_blob_create</a></div><div class="ttdeci">ANB_Blob_t * ANB_blob_create(size_t initial_size)</div><div class="ttdoc">Create a new blob buffer.</div><div class="ttdef"><b>Definition</b> blob.c:12</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_gacbdc8449ebd2d2382a305d1a8086df4c"><div class="ttname"><a href="group__ANB__Blob.html#gacbdc8449ebd2d2382a305d1a8086df4c">ANB_blob_alloc</a></div><div class="ttdeci">void ANB_blob_alloc(ANB_Blob_t *blob, size_t bytes)</div><div class="ttdoc">Grow the blob buffer by adding bytes to its capacity.</div><div class="ttdef"><b>Definition</b> blob.c:41</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_gad48f9afd4d90744141d45867206763a1"><div class="ttname"><a href="group__ANB__Blob.html#gad48f9afd4d90744141d45867206763a1">ANB_blob_realloc</a></div><div class="ttdeci">void ANB_blob_realloc(ANB_Blob_t *blob, size_t new_capacity)</div><div class="ttdoc">Set the blob buffer to an exact capacity, shrinking or growing as needed.</div><div class="ttdef"><b>Definition</b> blob.c:55</div></div>
-<div class="ttc" id="agroup__ANB__Blob_html_gad944d5ea478987f68272c8df8a46238e"><div class="ttname"><a href="group__ANB__Blob.html#gad944d5ea478987f68272c8df8a46238e">ANB_blob_destroy</a></div><div class="ttdeci">void ANB_blob_destroy(ANB_Blob_t *blob)</div><div class="ttdoc">Destroy a blob buffer and free its memory.</div><div class="ttdef"><b>Definition</b> blob.c:24</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_ga75bd2af1393fed7778560d53d0b65693"><div class="ttname"><a href="group__ANB__Blob.html#ga75bd2af1393fed7778560d53d0b65693">ANB_blob_clear</a></div><div class="ttdeci">void ANB_blob_clear(ANB_Blob_t *blob)</div><div class="ttdoc">Zero the entire blob buffer and reset the write position to 0.</div><div class="ttdef"><b>Definition</b> blob.c:64</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gaa72e1e310bb17f8f62ab607680fc5062"><div class="ttname"><a href="group__ANB__Blob.html#gaa72e1e310bb17f8f62ab607680fc5062">ANB_blob_push</a></div><div class="ttdeci">void ANB_blob_push(ANB_Blob_t *blob, const uint8_t *bytes, size_t len)</div><div class="ttdoc">Push bytes to the blob at the current write position.</div><div class="ttdef"><b>Definition</b> blob.c:70</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gaa8bb617fd7a912c842c2e754614dbd46"><div class="ttname"><a href="group__ANB__Blob.html#gaa8bb617fd7a912c842c2e754614dbd46">ANB_blob_data</a></div><div class="ttdeci">uint8_t * ANB_blob_data(ANB_Blob_t *blob)</div><div class="ttdoc">Get a pointer to the internal data buffer.</div><div class="ttdef"><b>Definition</b> blob.c:32</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gab114589a3bb6b15d716e3ed13430df12"><div class="ttname"><a href="group__ANB__Blob.html#gab114589a3bb6b15d716e3ed13430df12">ANB_blob_reset</a></div><div class="ttdeci">void ANB_blob_reset(ANB_Blob_t *blob)</div><div class="ttdoc">Reset the write position to 0 without clearing buffer contents.</div><div class="ttdef"><b>Definition</b> blob.c:92</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gabd335048dac9ff2aa456d6a6771e7d2e"><div class="ttname"><a href="group__ANB__Blob.html#gabd335048dac9ff2aa456d6a6771e7d2e">ANB_blob_create</a></div><div class="ttdeci">ANB_Blob_t * ANB_blob_create(size_t initial_size)</div><div class="ttdoc">Create a new blob buffer.</div><div class="ttdef"><b>Definition</b> blob.c:13</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gacbdc8449ebd2d2382a305d1a8086df4c"><div class="ttname"><a href="group__ANB__Blob.html#gacbdc8449ebd2d2382a305d1a8086df4c">ANB_blob_alloc</a></div><div class="ttdeci">void ANB_blob_alloc(ANB_Blob_t *blob, size_t bytes)</div><div class="ttdoc">Grow the blob buffer by adding bytes to its capacity.</div><div class="ttdef"><b>Definition</b> blob.c:42</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gad48f9afd4d90744141d45867206763a1"><div class="ttname"><a href="group__ANB__Blob.html#gad48f9afd4d90744141d45867206763a1">ANB_blob_realloc</a></div><div class="ttdeci">void ANB_blob_realloc(ANB_Blob_t *blob, size_t new_capacity)</div><div class="ttdoc">Set the blob buffer to an exact capacity, shrinking or growing as needed.</div><div class="ttdef"><b>Definition</b> blob.c:56</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gad8bbde195fbd684bf4476567eba182c6"><div class="ttname"><a href="group__ANB__Blob.html#gad8bbde195fbd684bf4476567eba182c6">ANB_blob_data_len</a></div><div class="ttdeci">size_t ANB_blob_data_len(ANB_Blob_t *blob)</div><div class="ttdoc">Get the current write position (number of bytes pushed).</div><div class="ttdef"><b>Definition</b> blob.c:87</div></div>
+<div class="ttc" id="agroup__ANB__Blob_html_gad944d5ea478987f68272c8df8a46238e"><div class="ttname"><a href="group__ANB__Blob.html#gad944d5ea478987f68272c8df8a46238e">ANB_blob_destroy</a></div><div class="ttdeci">void ANB_blob_destroy(ANB_Blob_t *blob)</div><div class="ttdoc">Destroy a blob buffer and free its memory.</div><div class="ttdef"><b>Definition</b> blob.c:25</div></div>
 </div><!-- fragment --><h2 class="doxsection"><a class="anchor" id="autotoc_md9"></a>
 API</h2>
 <table class="markdownTable">
@@ -218,19 +238,28 @@ API</h2>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><span class="tt">ANB_blob_capacity(b)</span>  </td><td class="markdownTableBodyNone">Return total allocated bytes  </td></tr>
 <tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone"><span class="tt">ANB_blob_data_len(b)</span>  </td><td class="markdownTableBodyNone">Return current write position (bytes pushed)  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">ANB_blob_push(b, bytes, len)</span>  </td><td class="markdownTableBodyNone">Append bytes at write position, auto-grows (doubling) if needed  </td></tr>
+<tr class="markdownTableRowOdd">
 <td class="markdownTableBodyNone"><span class="tt">ANB_blob_alloc(b, bytes)</span>  </td><td class="markdownTableBodyNone">Grow buffer; <span class="tt">bytes == 0</span> doubles capacity  </td></tr>
 <tr class="markdownTableRowEven">
 <td class="markdownTableBodyNone"><span class="tt">ANB_blob_realloc(b, size)</span>  </td><td class="markdownTableBodyNone">Set exact capacity (shrink or grow)  </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><span class="tt">ANB_blob_clear(b)</span>  </td><td class="markdownTableBodyNone"><span class="tt">memset</span> entire buffer to 0  </td></tr>
+<td class="markdownTableBodyNone"><span class="tt">ANB_blob_clear(b)</span>  </td><td class="markdownTableBodyNone"><span class="tt">memset</span> entire buffer to 0, reset write position to 0  </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone"><span class="tt">ANB_blob_reset(b)</span>  </td><td class="markdownTableBodyNone">Reset write position to 0 without clearing buffer contents  </td></tr>
 </table>
 <h2 class="doxsection"><a class="anchor" id="autotoc_md10"></a>
 Key behaviors</h2>
 <ul>
-<li><b>Externally managed</b> — no concept of "used" bytes; you track offsets yourself.</li>
+<li><b>Position tracking</b> — internal counter tracks bytes written via <span class="tt"><a class="el" href="group__ANB__Blob.html#gaa72e1e310bb17f8f62ab607680fc5062" title="Push bytes to the blob at the current write position.">ANB_blob_push</a></span>. <span class="tt"><a class="el" href="group__ANB__Blob.html#gad8bbde195fbd684bf4476567eba182c6" title="Get the current write position (number of bytes pushed).">ANB_blob_data_len</a></span> returns this position.</li>
+<li><b><span class="tt">ANB_blob_push(b, bytes, len)</span></b> appends bytes at the current position and increments it. Auto-grows (doubling) if needed.</li>
+<li><b><span class="tt">ANB_blob_reset(b)</span></b> sets position to 0 without clearing buffer contents. Subsequent pushes overwrite existing data.</li>
+<li><b><span class="tt">ANB_blob_clear(b)</span></b> zeros the entire buffer and resets position to 0.</li>
 <li><b><span class="tt">ANB_blob_alloc(b, bytes)</span></b> adds <span class="tt">bytes</span> to current capacity. Passing <span class="tt">0</span> doubles.</li>
 <li><b><span class="tt">ANB_blob_realloc(b, size)</span></b> sets capacity to exactly <span class="tt">size</span>, reallocating the buffer. Shrinking may lose data beyond the new size.</li>
-<li><b>Data pointers are invalidated</b> by <span class="tt"><a class="el" href="group__ANB__Blob.html#gacbdc8449ebd2d2382a305d1a8086df4c" title="Grow the blob buffer by adding bytes to its capacity.">ANB_blob_alloc</a></span> and <span class="tt"><a class="el" href="group__ANB__Blob.html#gad48f9afd4d90744141d45867206763a1" title="Set the blob buffer to an exact capacity, shrinking or growing as needed.">ANB_blob_realloc</a></span> (realloc may move the buffer).</li>
+<li><b>Data pointers are invalidated</b> by <span class="tt"><a class="el" href="group__ANB__Blob.html#gaa72e1e310bb17f8f62ab607680fc5062" title="Push bytes to the blob at the current write position.">ANB_blob_push</a></span> (if it grows), <span class="tt"><a class="el" href="group__ANB__Blob.html#gacbdc8449ebd2d2382a305d1a8086df4c" title="Grow the blob buffer by adding bytes to its capacity.">ANB_blob_alloc</a></span>, and <span class="tt"><a class="el" href="group__ANB__Blob.html#gad48f9afd4d90744141d45867206763a1" title="Set the blob buffer to an exact capacity, shrinking or growing as needed.">ANB_blob_realloc</a></span> (realloc may move the buffer).</li>
 <li><b>Allocation failures</b> abort via <span class="tt">abort()</span>. </li>
 </ul>
 </div></div><!-- contents -->

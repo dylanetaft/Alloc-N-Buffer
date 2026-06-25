@@ -115,7 +115,13 @@ Functions</h2></td></tr>
 <tr class="memitem:gad48f9afd4d90744141d45867206763a1" id="r_gad48f9afd4d90744141d45867206763a1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gad48f9afd4d90744141d45867206763a1">ANB_blob_realloc</a> (<a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *blob, size_t new_capacity)</td></tr>
 <tr class="memdesc:gad48f9afd4d90744141d45867206763a1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the blob buffer to an exact capacity, shrinking or growing as needed.  <br /></td></tr>
 <tr class="memitem:ga75bd2af1393fed7778560d53d0b65693" id="r_ga75bd2af1393fed7778560d53d0b65693"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ga75bd2af1393fed7778560d53d0b65693">ANB_blob_clear</a> (<a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *blob)</td></tr>
-<tr class="memdesc:ga75bd2af1393fed7778560d53d0b65693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero the entire blob buffer.  <br /></td></tr>
+<tr class="memdesc:ga75bd2af1393fed7778560d53d0b65693"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero the entire blob buffer and reset the write position to 0.  <br /></td></tr>
+<tr class="memitem:gaa72e1e310bb17f8f62ab607680fc5062" id="r_gaa72e1e310bb17f8f62ab607680fc5062"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gaa72e1e310bb17f8f62ab607680fc5062">ANB_blob_push</a> (<a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *blob, const uint8_t *bytes, size_t len)</td></tr>
+<tr class="memdesc:gaa72e1e310bb17f8f62ab607680fc5062"><td class="mdescLeft">&#160;</td><td class="mdescRight">Push bytes to the blob at the current write position.  <br /></td></tr>
+<tr class="memitem:gad8bbde195fbd684bf4476567eba182c6" id="r_gad8bbde195fbd684bf4476567eba182c6"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gad8bbde195fbd684bf4476567eba182c6">ANB_blob_data_len</a> (<a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *blob)</td></tr>
+<tr class="memdesc:gad8bbde195fbd684bf4476567eba182c6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current write position (number of bytes pushed).  <br /></td></tr>
+<tr class="memitem:gab114589a3bb6b15d716e3ed13430df12" id="r_gab114589a3bb6b15d716e3ed13430df12"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#gab114589a3bb6b15d716e3ed13430df12">ANB_blob_reset</a> (<a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *blob)</td></tr>
+<tr class="memdesc:gab114589a3bb6b15d716e3ed13430df12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset the write position to 0 without clearing buffer contents.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <p>Simple contiguous byte buffer, externally managed. </p>
@@ -211,7 +217,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Zero the entire blob buffer. </p>
+<p>Zero the entire blob buffer and reset the write position to 0. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">blob</td><td>The blob. Must not be NULL. </td></tr>
@@ -274,6 +280,32 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="gad8bbde195fbd684bf4476567eba182c6" name="gad8bbde195fbd684bf4476567eba182c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gad8bbde195fbd684bf4476567eba182c6">&#9670;&#160;</a></span>ANB_blob_data_len()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t ANB_blob_data_len </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *</td>          <td class="paramname"><span class="paramname"><em>blob</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the current write position (number of bytes pushed). </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">blob</td><td>The blob. Must not be NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of bytes written via ANB_blob_push since last clear/reset. </dd></dl>
+
+</div>
+</div>
 <a id="gad944d5ea478987f68272c8df8a46238e" name="gad944d5ea478987f68272c8df8a46238e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gad944d5ea478987f68272c8df8a46238e">&#9670;&#160;</a></span>ANB_blob_destroy()</h2>
 
@@ -296,6 +328,44 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="gaa72e1e310bb17f8f62ab607680fc5062" name="gaa72e1e310bb17f8f62ab607680fc5062"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa72e1e310bb17f8f62ab607680fc5062">&#9670;&#160;</a></span>ANB_blob_push()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ANB_blob_push </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *</td>          <td class="paramname"><span class="paramname"><em>blob</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uint8_t *</td>          <td class="paramname"><span class="paramname"><em>bytes</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t</td>          <td class="paramname"><span class="paramname"><em>len</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Push bytes to the blob at the current write position. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">blob</td><td>The blob. Must not be NULL. </td></tr>
+    <tr><td class="paramname">bytes</td><td>Pointer to data to copy. </td></tr>
+    <tr><td class="paramname">len</td><td>Number of bytes to copy. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>Auto-grows the buffer (doubling) if needed. Aborts on allocation failure. </dd></dl>
+<dl class="section warning"><dt>Warning</dt><dd>Any pointer previously returned by ANB_blob_data may be invalidated. </dd></dl>
 
 </div>
 </div>
@@ -328,6 +398,32 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section note"><dt>Note</dt><dd>Aborts on allocation failure. Shrinking may lose data beyond the new size. </dd></dl>
 <dl class="section warning"><dt>Warning</dt><dd>Any pointer previously returned by ANB_blob_data may be invalidated. </dd></dl>
+
+</div>
+</div>
+<a id="gab114589a3bb6b15d716e3ed13430df12" name="gab114589a3bb6b15d716e3ed13430df12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab114589a3bb6b15d716e3ed13430df12">&#9670;&#160;</a></span>ANB_blob_reset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ANB_blob_reset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="#ga62c274fcc5cdb7f30bdcca7f45caf15e">ANB_Blob_t</a> *</td>          <td class="paramname"><span class="paramname"><em>blob</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Reset the write position to 0 without clearing buffer contents. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">blob</td><td>The blob. Must not be NULL. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>Subsequent pushes will overwrite existing data from the beginning. </dd></dl>
 
 </div>
 </div>

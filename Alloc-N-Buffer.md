@@ -1,6 +1,8 @@
 # Alloc-N-Buffer
 
-A C library providing `ANB_Slab` -- a slab allocator that doubles as a buffer queue with item tracking.
+A C library providing two buffer types:
+- `ANB_Slab` — a slab allocator that doubles as a buffer queue with item tracking.
+- `ANB_Blob` — a simple contiguous byte buffer with position tracking.
 
 ## What it does
 
@@ -95,7 +97,7 @@ As bytes are aligned, you may directly cast the returned pointer to a struct typ
 
 ## ANB_Blob — Simple contiguous byte buffer
 
-`ANB_Blob` is a raw, externally managed byte buffer. Unlike `ANB_Slab`, it has no item tracking, alignment padding, or queue semantics. Think of it as a managed `uint8_t*` that you control completely.
+`ANB_Blob` is a raw byte buffer with an internal write position. Unlike `ANB_Slab`, it has no item tracking, alignment padding, or queue semantics. Think of it as a managed `uint8_t*` that you can either control directly or use as a byte buffer with push/position tracking.
 
 ### Quick start
 
@@ -104,9 +106,26 @@ As bytes are aligned, you may directly cast the returned pointer to a struct typ
 
 ANB_Blob_t *b = ANB_blob_create(1024);
 
-// Write directly into the buffer
+// Push bytes (auto-tracks position, auto-grows if needed)
+ANB_blob_push(b, (const uint8_t *)"hello", 6);
+ANB_blob_push(b, (const uint8_t *)"world", 6);
+
+printf("bytes written: %zu\n", ANB_blob_data_len(b));  // 12
+
+// Read the data
 uint8_t *data = ANB_blob_data(b);
-memcpy(data, "hello", 6);
+printf("%.*s\n", (int)ANB_blob_data_len(b), data);
+
+// Reset position to 0 (data remains in buffer)
+ANB_blob_reset(b);
+printf("after reset: %zu\n", ANB_blob_data_len(b));  // 0
+
+// Or clear everything (zeros buffer and resets position)
+ANB_blob_clear(b);
+
+// You can also write directly into the buffer
+data = ANB_blob_data(b);
+memcpy(data, "manual write", 13);
 
 // Grow by adding bytes
 ANB_blob_alloc(b, 512);   // capacity is now 1536
@@ -116,9 +135,6 @@ ANB_blob_alloc(b, 0);     // capacity is now 3072
 
 // Set exact capacity (shrink or grow)
 ANB_blob_realloc(b, 2048);
-
-// Zero everything
-ANB_blob_clear(b);
 
 printf("capacity: %zu\n", ANB_blob_capacity(b));
 
@@ -133,14 +149,20 @@ ANB_blob_destroy(b);
 | `ANB_blob_destroy(b)` | Free memory (NULL-safe) |
 | `ANB_blob_data(b)` | Return `uint8_t*` to internal buffer |
 | `ANB_blob_capacity(b)` | Return total allocated bytes |
+| `ANB_blob_data_len(b)` | Return current write position (bytes pushed) |
+| `ANB_blob_push(b, bytes, len)` | Append bytes at write position, auto-grows (doubling) if needed |
 | `ANB_blob_alloc(b, bytes)` | Grow buffer; `bytes == 0` doubles capacity |
 | `ANB_blob_realloc(b, size)` | Set exact capacity (shrink or grow) |
-| `ANB_blob_clear(b)` | `memset` entire buffer to 0 |
+| `ANB_blob_clear(b)` | `memset` entire buffer to 0, reset write position to 0 |
+| `ANB_blob_reset(b)` | Reset write position to 0 without clearing buffer contents |
 
 ### Key behaviors
 
-- **Externally managed** — no concept of "used" bytes; you track offsets yourself.
+- **Position tracking** — internal counter tracks bytes written via `ANB_blob_push`. `ANB_blob_data_len` returns this position.
+- **`ANB_blob_push(b, bytes, len)`** appends bytes at the current position and increments it. Auto-grows (doubling) if needed.
+- **`ANB_blob_reset(b)`** sets position to 0 without clearing buffer contents. Subsequent pushes overwrite existing data.
+- **`ANB_blob_clear(b)`** zeros the entire buffer and resets position to 0.
 - **`ANB_blob_alloc(b, bytes)`** adds `bytes` to current capacity. Passing `0` doubles.
 - **`ANB_blob_realloc(b, size)`** sets capacity to exactly `size`, reallocating the buffer. Shrinking may lose data beyond the new size.
-- **Data pointers are invalidated** by `ANB_blob_alloc` and `ANB_blob_realloc` (realloc may move the buffer).
+- **Data pointers are invalidated** by `ANB_blob_push` (if it grows), `ANB_blob_alloc`, and `ANB_blob_realloc` (realloc may move the buffer).
 - **Allocation failures** abort via `abort()`.

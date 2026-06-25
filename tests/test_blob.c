@@ -141,3 +141,96 @@ void test_clear_after_alloc(void) {
 }
 
 /* ------------------------------------------------------------------ */
+/* 9. Push basic                                                      */
+/* ------------------------------------------------------------------ */
+void test_push_basic(void) {
+    ANB_Blob_t *b = ANB_blob_create(64);
+    uint8_t data[] = {1, 2, 3, 4, 5};
+
+    ANB_blob_push(b, data, 5);
+    TEST_ASSERT_EQUAL_size_t(5, ANB_blob_data_len(b));
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(data, ANB_blob_data(b), 5);
+
+    ANB_blob_destroy(b);
+}
+
+/* ------------------------------------------------------------------ */
+/* 10. Push auto-grow                                                 */
+/* ------------------------------------------------------------------ */
+void test_push_auto_grow(void) {
+    ANB_Blob_t *b = ANB_blob_create(8);
+    TEST_ASSERT_EQUAL_size_t(8, ANB_blob_capacity(b));
+
+    uint8_t data[20];
+    memset(data, 0xAA, 20);
+
+    ANB_blob_push(b, data, 20);
+    TEST_ASSERT(ANB_blob_capacity(b) >= 20);
+    TEST_ASSERT_EQUAL_size_t(20, ANB_blob_data_len(b));
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(data, ANB_blob_data(b), 20);
+
+    ANB_blob_destroy(b);
+}
+
+/* ------------------------------------------------------------------ */
+/* 11. Reset preserves data but zeros position                        */
+/* ------------------------------------------------------------------ */
+void test_reset(void) {
+    ANB_Blob_t *b = ANB_blob_create(64);
+    uint8_t data[] = {10, 20, 30};
+
+    ANB_blob_push(b, data, 3);
+    TEST_ASSERT_EQUAL_size_t(3, ANB_blob_data_len(b));
+
+    ANB_blob_reset(b);
+    TEST_ASSERT_EQUAL_size_t(0, ANB_blob_data_len(b));
+
+    uint8_t *d = ANB_blob_data(b);
+    TEST_ASSERT_EQUAL_UINT8(10, d[0]);
+    TEST_ASSERT_EQUAL_UINT8(20, d[1]);
+    TEST_ASSERT_EQUAL_UINT8(30, d[2]);
+
+    ANB_blob_destroy(b);
+}
+
+/* ------------------------------------------------------------------ */
+/* 12. Clear resets position                                          */
+/* ------------------------------------------------------------------ */
+void test_clear_resets_pos(void) {
+    ANB_Blob_t *b = ANB_blob_create(64);
+    uint8_t data[] = {1, 2, 3, 4};
+
+    ANB_blob_push(b, data, 4);
+    TEST_ASSERT_EQUAL_size_t(4, ANB_blob_data_len(b));
+
+    ANB_blob_clear(b);
+    TEST_ASSERT_EQUAL_size_t(0, ANB_blob_data_len(b));
+
+    uint8_t *d = ANB_blob_data(b);
+    for (int i = 0; i < 4; i++) {
+        TEST_ASSERT_EQUAL_UINT8(0, d[i]);
+    }
+
+    ANB_blob_destroy(b);
+}
+
+/* ------------------------------------------------------------------ */
+/* 13. Push multiple sequential                                       */
+/* ------------------------------------------------------------------ */
+void test_push_multiple(void) {
+    ANB_Blob_t *b = ANB_blob_create(64);
+    uint8_t d1[] = {1, 2, 3};
+    uint8_t d2[] = {4, 5};
+    uint8_t d3[] = {6, 7, 8, 9};
+
+    ANB_blob_push(b, d1, 3);
+    ANB_blob_push(b, d2, 2);
+    ANB_blob_push(b, d3, 4);
+
+    TEST_ASSERT_EQUAL_size_t(9, ANB_blob_data_len(b));
+
+    uint8_t expected[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    TEST_ASSERT_EQUAL_UINT8_ARRAY(expected, ANB_blob_data(b), 9);
+
+    ANB_blob_destroy(b);
+}

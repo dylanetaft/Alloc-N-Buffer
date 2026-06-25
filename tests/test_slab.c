@@ -361,6 +361,11 @@ void test_realloc_exact(void);
 void test_data_after_alloc(void);
 void test_clear(void);
 void test_clear_after_alloc(void);
+void test_push_basic(void);
+void test_push_auto_grow(void);
+void test_reset(void);
+void test_clear_resets_pos(void);
+void test_push_multiple(void);
 
 /* ------------------------------------------------------------------ */
 int main(void) {
@@ -382,5 +387,10 @@ int main(void) {
     RUN_TEST(test_data_after_alloc);
     RUN_TEST(test_clear);
     RUN_TEST(test_clear_after_alloc);
+    RUN_TEST(test_push_basic);
+    RUN_TEST(test_push_auto_grow);
+    RUN_TEST(test_reset);
+    RUN_TEST(test_clear_resets_pos);
+    RUN_TEST(test_push_multiple);
     return UNITY_END();
 }
