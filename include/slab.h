@@ -106,8 +106,7 @@ typedef struct ANB_SlabIter {
  * return the first item
  * @param out_size If non-NULL, receives the item's original size in bytes.
  * @return Pointer to the current item's data, or NULL if no more items.
- * @note Advances iter to the next item on each call. Do not push or pop
- *       while iterating.  Restart iteration if you need to do this
+ * @note Advances iter to the next item on each call. OK to pop items while iterating 
  */
 uint8_t *ANB_slab_peek_item_iter(ANB_Slab_t* queue, ANB_SlabIter_t *iter, size_t *out_size);
 
